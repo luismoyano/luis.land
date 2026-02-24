@@ -1023,35 +1023,35 @@ body {
 .silhouette[data-sprite="1"] {
   width: 564px;
   height: 1088px;
-  background-image: url('/assets/sprite_1.png');
+  background-image: url('assets/sprite_1.png');
   margin-right: -282px;
 }
 
 .silhouette[data-sprite="2"] {
   width: 500px;
   height: 1120px;
-  background-image: url('/assets/sprite_2.png');
+  background-image: url('assets/sprite_2.png');
   margin-right: -250px;
 }
 
 .silhouette[data-sprite="3"] {
   width: 675px;
   height: 1003px;
-  background-image: url('/assets/sprite_3.png');
+  background-image: url('assets/sprite_3.png');
   margin-right: -337px;
 }
 
 .silhouette[data-sprite="4"] {
   width: 740px;
   height: 1053px;
-  background-image: url('/assets/sprite_4.png');
+  background-image: url('assets/sprite_4.png');
   margin-right: -370px;
 }
 
 .silhouette[data-sprite="5"] {
   width: 420px;
   height: 1016px;
-  background-image: url('/assets/sprite_5.png');
+  background-image: url('assets/sprite_5.png');
   margin-right: -210px;
 }
 
@@ -1113,7 +1113,7 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background-image: url('/assets/necrodancer_gif.gif');
+  background-image: url('assets/necrodancer_gif.gif');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

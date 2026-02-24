@@ -1501,13 +1501,13 @@
     
     // Load MTL and OBJ model
     const mtlLoader = new THREE.MTLLoader();
-    mtlLoader.setPath('/assets/');
+    mtlLoader.setPath('assets/');
     mtlLoader.load('uploads_files_5312939_isometric1.mtl', (materials) => {
       materials.preload();
       
       const objLoader = new THREE.OBJLoader();
       objLoader.setMaterials(materials);
-      objLoader.setPath('/assets/');
+      objLoader.setPath('assets/');
       objLoader.load('uploads_files_5312939_isometric1.obj', (obj) => {
         freelance3D.model = obj;
         
@@ -1774,7 +1774,7 @@
       translate: -50% -50%;
       transform: rotateX(-55deg) rotate(${angleDeg + toeOut}deg) scaleX(${mirror});
       transform-origin: center center;
-      background: url('/assets/right-shoe-footprint.png') center/contain no-repeat;
+      background: url('assets/right-shoe-footprint.png') center/contain no-repeat;
       pointer-events: none;
       opacity: 0.7;
       transition: opacity 1s ease;
@@ -2236,7 +2236,7 @@
   let currentLang = localStorage.getItem('lang') || 'en';
 
   async function loadTranslations(lang) {
-    const res = await fetch(`/i18n/${lang}.json`);
+    const res = await fetch(`i18n/${lang}.json`);
     if (!res.ok) throw new Error(`Failed to load /i18n/${lang}.json`);
     return res.json();
   }
