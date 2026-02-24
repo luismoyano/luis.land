@@ -1,0 +1,40 @@
+{
+  "fab.email.title": "Send email",
+  "fab.email.label": "Say hi!",
+  "fab.github.title": "GitHub",
+
+  "arrow.email": "Letters here",
+  "arrow.github": "My work",
+  "arrow.scroll": "Get to know me",
+
+  "hero.greeting": "Hello, I'm",
+  "hero.subtitle": "And I love building things.",
+  "hero.scroll": "scroll",
+
+  "img.alt.pencil": "Pencil",
+
+  "story.notebook.line1": "I started drawing",
+  "story.notebook.line2": "comics by pencil and paper",
+  "story.notebook.line3": "because I had no",
+  "story.notebook.line4": "other way to",
+  "story.notebook.line5": "tell stories.",
+
+  "story.map.line1": "Then it was photography.",
+  "story.map.line2": "Then videogames.",
+  "story.map.line3": "And today it's code.",
+
+  "story.medium": "The medium changes but The obsession is the same.",
+
+  "story.videogames": "I've worked on more than 30 videogames, you might know some of them.",
+
+  "story.startups": "I've built startups from scratch, taught salsa dancing, lived in many places...",
+
+  "story.freelance": "And now I work independently building web products from start to finish.",
+
+  "iso.floor.label": "Technologies I like",
+
+  "iso.cta.text": "Did you like what you see? Do you have a project? Want to say hi?",
+  "iso.cta.button": "Let's talk",
+
+  "modal.email.label": "Write to me at"
+}
