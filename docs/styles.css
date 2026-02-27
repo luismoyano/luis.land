@@ -20,6 +20,15 @@
   box-sizing: border-box;
 }
 
+@media (prefers-color-scheme: dark) {
+  html {
+    filter: none !important;
+  }
+  img, svg, video {
+    filter: none !important;
+  }
+}
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
