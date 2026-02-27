@@ -27,10 +27,9 @@ html {
 
 body {
   font-family: var(--font-main);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: #fafafa !important;
+  color: #0a0a0b !important;
   line-height: 1.6;
-  overflow-x: hidden;
   overflow-x: hidden;
 }
 
