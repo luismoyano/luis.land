@@ -111,11 +111,33 @@
   }
 
   /**
+   * Returns the current vertical scroll offset in page coordinates.
+   * getBoundingClientRect() uses the layout viewport coordinate system,
+   * which corresponds to window.scrollY. visualViewport.pageTop can differ
+   * during rubber-band scrolling on iOS, causing misalignment.
+   */
+  function getPageScrollY() {
+    return window.scrollY;
+  }
+
+  /**
+   * Returns the CSS-pixel width of the visible viewport.
+   * getBoundingClientRect() returns CSS-pixel coordinates, so the SVG viewBox
+   * must use the same unit. window.innerWidth can return a larger value in some
+   * Chrome DevTools emulation modes (layout viewport > visual viewport), causing
+   * SVG coordinates to be scaled down and misaligned with DOM element positions.
+   * visualViewport.width always matches the CSS-pixel space used by getBoundingClientRect().
+   */
+  function getViewportWidth() {
+    return window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  }
+
+  /**
    * Generate waypoints for the timeline path based on content positions
    */
   function generateWaypoints() {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const viewportWidth = getViewportWidth();
+    const viewportHeight = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
     const documentHeight = document.documentElement.scrollHeight;
     
     // Start point (circle center)
@@ -125,7 +147,7 @@
     
     if (firstStory) {
       const firstStoryRect = firstStory.getBoundingClientRect();
-      const firstStoryTop = firstStoryRect.top + window.scrollY;
+      const firstStoryTop = firstStoryRect.top + getPageScrollY();
       
       // The timeline ends before the first-story text, giving room for the scribble
       // Offset upward so the eraser and scribble start higher on the page
@@ -184,14 +206,15 @@
     
     // Get circle center position (absolute document coordinates)
     lineStartX = circleRect.left + circleRect.width / 2;
-    lineStartY = circleRect.top + circleRect.height / 2 + window.scrollY;
-    
+    lineStartY = circleRect.top + circleRect.height / 2 + getPageScrollY();
+
     // Get circle radius for stroke width
     circleRadius = circleRect.width / 2;
     
     // Get viewport dimensions
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const viewportWidth = getViewportWidth();
+    // Use visualViewport.height on iOS Safari to get the actual visible height
+    const viewportHeight = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
 
     // Recalculate dynamic scribble constants so they work on any screen size.
     // SCRIBBLE_SCALE: on desktop cap at 2.5; on mobile shrink so the 500-unit viewBox fits.
@@ -231,7 +254,7 @@
     // Calculate where the eraser (transition point) should be positioned
     if (firstStory) {
       const firstStoryRect = firstStory.getBoundingClientRect();
-      const firstStoryY = firstStoryRect.top + window.scrollY;
+      const firstStoryY = firstStoryRect.top + getPageScrollY();
       
       // The eraser position is at the end of the colorful path (which ends at firstStoryY)
       pencilTransitionStart = getPathLengthForY(firstStoryY);
@@ -285,9 +308,11 @@
   function updateViewBox() {
     if (!timelineSvg) return;
     
-    const scrollY = window.scrollY;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const scrollY = getPageScrollY();
+    const viewportWidth = getViewportWidth();
+    // Use visualViewport.height on iOS Safari to get the actual visible height
+    // (window.innerHeight can be larger than the visible area when the address bar is shown)
+    const viewportHeight = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
     
     // Shift the viewBox down as user scrolls
     timelineSvg.setAttribute('viewBox', `0 ${scrollY} ${viewportWidth} ${viewportHeight}`);
@@ -409,8 +434,8 @@
    * The line end should stay at the vertical center of the viewport
    */
   function getTargetLineEndY() {
-    const scrollY = window.scrollY;
-    const viewportHeight = window.innerHeight;
+    const scrollY = getPageScrollY();
+    const viewportHeight = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
     const viewportCenter = viewportHeight / 2;
     
     // The target end Y is at the center of the current viewport (in document coordinates)
@@ -453,8 +478,8 @@
   function updateTimeline() {
     if (!isTimelineReady || !colorfulPath || !initialAnimationComplete) return;
     
-    const viewportHeight = window.innerHeight;
-    const scrollY = window.scrollY;
+    const viewportHeight = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    const scrollY = getPageScrollY();
     
     // The initial animation ended with the line at the bottom of the viewport
     const initialLineEndY = viewportHeight;
@@ -488,8 +513,16 @@
     }
     
     // Find the path length needed to reach this Y position
-    // Clamp to pathLength since the path ends at the eraser
-    let targetLength = Math.min(getPathLengthForY(currentLineEndY), pathLength);
+    // Clamp to pathLength since the path ends at the eraser.
+    // Small dead-zone: don't start drawing until the line would extend at least
+    // one stroke-width past the origin. This absorbs any sub-pixel rounding
+    // differences between the circle position and the path start, ensuring the
+    // segment is completely hidden (not a faint dot) at rest.
+    const MIN_DRAW_DISTANCE = circleRadius * 2;
+    let targetLength = 0;
+    if (currentLineEndY > lineStartY + MIN_DRAW_DISTANCE) {
+      targetLength = Math.min(getPathLengthForY(currentLineEndY), pathLength);
+    }
     
     // === SCRIBBLE MODE LOGIC ===
     // Check if we should enter scribble mode when notebook-section top reaches viewport top
@@ -984,7 +1017,7 @@
     
     // Get the map section's position on the page
     const mapSectionRect = mapSection.getBoundingClientRect();
-    const mapSectionTop = mapSectionRect.top + window.scrollY;
+    const mapSectionTop = mapSectionRect.top + getPageScrollY();
     
     // Calculate the first point based on scribble end point
     // Convert scribbleEndPoint (page coordinates) to map-section relative coordinates
@@ -2493,4 +2526,30 @@
     clearTimeout(_arrowResizeTimer);
     _arrowResizeTimer = setTimeout(buildHeroArrowPaths, 150);
   });
+
+  // Regenerate timeline path on viewport resize (handles mobile browser toolbar
+  // appearing/disappearing, which changes 100vh and shifts hero layout).
+  let _timelineResizeTimer;
+  function onTimelineResize() {
+    if (!isTimelineReady) return;
+    // Don't regenerate if the user has scrolled past the hero (scribble territory)
+    if (isScribbling || isReverseScribbling || scribbleProgress > 0) return;
+    clearTimeout(_timelineResizeTimer);
+    _timelineResizeTimer = setTimeout(() => {
+      requestAnimationFrame(() => {
+        generatePathFromCircle();
+        if (pathLength > 0) {
+          colorfulPath.style.strokeDasharray = pathLength;
+          pencilPath.style.strokeDasharray = `0 ${pathLength}`;
+        }
+        updateViewBox();
+        updateTimeline();
+      });
+    }, 200);
+  }
+  window.addEventListener('resize', onTimelineResize);
+  // visualViewport fires on iOS when the keyboard or browser chrome changes size
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onTimelineResize);
+  }
 })();
