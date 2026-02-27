@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
+  color-scheme: light;
   --bg-primary: #fafafa;
   --bg-secondary: #f0f0f0;
   --text-primary: #0a0a0b;
