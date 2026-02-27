@@ -68,12 +68,12 @@
   let isReverseScribbling = false; // Whether we're undrawing the scribble
   let scribbleProgress = 0; // 0 to 1, how much of the scribble is drawn
   let scribbleScrollAccumulator = 0; // Accumulated scroll during scribble
-  const SCRIBBLE_SCROLL_AMOUNT = 500; // Total scroll pixels needed to complete scribble
+  let SCRIBBLE_SCROLL_AMOUNT = 500; // Total scroll pixels needed to complete scribble (recalculated dynamically)
   let lastScrollY = 0; // Track last scroll position for direction detection
   
   // Hand-drawn scribble path (from assets/garabato.svg, scaled and repositioned)
   const SCRIBBLE_PATH = "M 16.582 53.489 C 15.1 73.284 17.674 79.855 22.796 97.863 C 28.473 117.82 43.902 134.396 57.171 149.597 C 94.18 191.992 141.422 227.769 192.555 250.853 C 226.572 266.21 259.26 271.895 294.549 255.415 C 304.528 250.755 313.152 244.475 321.812 237.776 C 331.286 230.446 342.671 222.571 347.693 211.167 C 353.597 197.76 346.412 181.869 340.554 169.996 C 335.36 159.469 329.693 147.804 321.082 139.557 C 308.276 127.293 287.552 127.206 271.465 122.236 C 252.211 116.287 231.976 110.767 211.579 114.83 C 194.489 118.234 179.178 128.471 165.69 138.978 C 141.513 157.812 115.472 182.848 109.678 214.351 C 106.03 234.187 125.834 254.049 138.28 266.574 C 166.6 295.074 194.28 322.051 237.356 320.67 C 248.181 320.323 258.129 317.916 268.279 314.32 C 277.632 311.006 289.022 307.531 295.289 299.208 C 299.319 293.856 299.753 286.027 300.261 279.632 C 301.56 263.28 299.745 246.893 297.975 230.664 C 295.727 210.055 294.891 186.781 284.483 168.245 C 269.387 141.36 233.277 147.112 208.733 155.473 C 197.826 159.189 187.695 163.347 177.229 168.242 C 170.928 171.189 164.669 174.238 158.541 177.53 C 122.906 196.673 64.189 232.236 82.357 281.689 C 89.707 301.696 119.343 315.856 135.668 326.589 C 153.319 338.193 171.122 351.444 191.877 356.971 C 201.118 359.431 210.981 359.611 220.476 359.402 C 232.321 359.142 243.87 356.599 254.221 347.952 C 261.585 341.8 263.802 330.138 264.256 322.421 C 265.248 305.573 264.562 288.426 263.872 271.585 C 262.399 235.672 261.444 192.493 218.079 183.066 C 178.378 174.436 140.39 197.368 111.279 221.776 C 97 233.747 81.103 248.484 83.947 268.799 C 87.288 292.659 117.017 312.529 133.878 326.426 C 170.207 356.369 212.283 388.997 261.346 390.115 C 270.563 390.325 281.428 391.432 290.451 388.926 C 295.064 387.644 295.67 383.981 298.998 381.829 C 310.5 374.392 320.293 362.958 330.187 353.617 C 347.725 337.058 370.901 319.431 375.392 294.207 C 379.687 270.085 372.003 242.012 354.606 224.311 C 347.516 217.098 334.496 212.838 326.09 206.649 C 309.758 194.625 292.672 183.223 272.007 180.61 C 264.306 179.636 251.54 179.656 244.217 180.888 C 231.138 183.089 223.115 186.66 211.621 193.256 C 185.365 208.322 153.165 237.935 151.821 271.531 C 150.168 312.845 181.683 350.455 202.368 382.993 C 207.041 390.343 209.521 389.601 213.719 397.234 C 214.74 399.091 219.405 410.196 220.417 412.146 C 221.299 413.845 222.232 422.28 221.694 424.736 C 220.791 428.865 219.856 432.994 219.034 437.14 C 217.265 446.061 211.466 469.388 218.434 478.604";
-  const SCRIBBLE_SCALE = 2.5; // Scale factor for the scribble (large to fill section)
+  let SCRIBBLE_SCALE = 2.5; // Scale factor for the scribble (recalculated dynamically)
   const SCRIBBLE_VIEWBOX_SIZE = 500; // Original viewBox of the scribble SVG
   // The scribble path starts at these coordinates in the original SVG
   const SCRIBBLE_START_X = 16.582;
@@ -129,7 +129,12 @@
       
       // The timeline ends before the first-story text, giving room for the scribble
       // Offset upward so the eraser and scribble start higher on the page
-      const eraserY = firstStoryTop - 280;
+      // On mobile the gap between viewport bottom and firstStoryTop can be small,
+      // so cap the offset adaptively to avoid placing the eraser inside the viewport.
+      const gap = firstStoryTop - viewportHeight;
+      const offset = gap > 560 ? 280 : Math.min(280, gap * 0.5);
+      const eraserHalfHeight = (ERASER_ORIGINAL_HEIGHT * ERASER_SCALE) / 2 + 40;
+      const eraserY = Math.max(firstStoryTop - offset, viewportHeight + eraserHalfHeight);
       waypoints.push({ x: lineStartX, y: eraserY, type: 'line' });
     } else {
       // Fallback: just a straight line to the bottom
@@ -187,6 +192,14 @@
     // Get viewport dimensions
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+
+    // Recalculate dynamic scribble constants so they work on any screen size.
+    // SCRIBBLE_SCALE: on desktop cap at 2.5; on mobile shrink so the 500-unit viewBox fits.
+    SCRIBBLE_SCALE = Math.min(viewportWidth / SCRIBBLE_VIEWBOX_SIZE, 2.5);
+    // SCRIBBLE_SCROLL_AMOUNT: proportional to the notebook section height, clamped to [300, 800].
+    if (notebookSection) {
+      SCRIBBLE_SCROLL_AMOUNT = Math.min(Math.max(notebookSection.offsetHeight * 0.7, 300), 800);
+    }
     
     // Store subtitle initial position
     if (heroSubtitle) {
@@ -285,6 +298,9 @@
    */
   function initTimelinePath() {
     if (!colorfulPath || !pencilPath) return;
+    
+    // Hide eraser until notebook-section scrolls into view
+    if (eraserIcon) eraserIcon.style.opacity = '0';
     
     // Generate path based on circle position
     generatePathFromCircle();
@@ -604,7 +620,11 @@
     const currentColor = getColorAtProgress(scrollProgress);
     colorfulPath.style.stroke = currentColor;
     
-    // Always update eraser position (it's always visible)
+    // Show eraser only while notebook-section is in the viewport
+    if (notebookSection && eraserIcon) {
+      const nbRect = notebookSection.getBoundingClientRect();
+      eraserIcon.style.opacity = (nbRect.bottom > 0 && nbRect.top < viewportHeight) ? '1' : '0';
+    }
     updateEraserPosition();
   }
 
@@ -714,28 +734,29 @@
       // Step 2: After circle animation (1s), show timeline and scroll indicator
       setTimeout(() => {
         if (timelineSvg) {
-          // Now that circle is visible and positioned, generate the path
-          initTimelinePath();
-          
-          // Initialize treasure map after scribble is set up (needs scribbleEndPoint)
-          initTreasureMap();
-          
+          // Make SVG visible FIRST — on iOS Safari, getTotalLength() returns 0
+          // on elements with opacity:0, so we must show before measuring.
           timelineSvg.classList.add('visible');
-          isTimelineReady = true;
           
-          // Skip initial line animation — line grows with scroll from the start
-          initialAnimationComplete = true;
-          // Set line to zero length initially (strokeDashoffset = pathLength = fully hidden)
-          if (colorfulPath) {
-            colorfulPath.style.strokeDasharray = pathLength;
-            colorfulPath.style.strokeDashoffset = pathLength;
-          }
-          // Reset subtitle in case it was styled by a previous run
-          if (heroSubtitle) {
-            heroSubtitle.style.transform = 'translateY(0)';
-            heroSubtitle.style.opacity = '1';
-          }
-          unlockScroll();
+          // One rAF so the browser applies layout before we measure path lengths
+          requestAnimationFrame(() => {
+            initTimelinePath();
+            initTreasureMap();
+            isTimelineReady = true;
+            initialAnimationComplete = true;
+            if (colorfulPath) {
+              colorfulPath.style.strokeDasharray = pathLength;
+              colorfulPath.style.strokeDashoffset = pathLength;
+            }
+            if (heroSubtitle) {
+              heroSubtitle.style.transform = 'translateY(0)';
+              heroSubtitle.style.opacity = '1';
+            }
+            unlockScroll();
+            // Force a first update in case the user scrolled during init
+            updateViewBox();
+            updateTimeline();
+          });
         }
         
         if (scrollIndicator) {
@@ -1062,11 +1083,17 @@
     // Position compass at the start of the treasure path
     if (compassIcon) {
       const startPoint = pathPoints[0];
-      const compassSize = 360; // Match CSS width/height
-      const offsetX = startPoint.x - compassSize / 2;
-      const offsetY = startPoint.y - compassSize / 2;
+      // getBoundingClientRect gives the actual rendered size (incl. overflow/scale),
+      // which is what we need to truly centre the visual on the path start point.
+      // getComputedStyle returns the CSS width (360px) which differs from the
+      // rendered size when the SVG content overflows its bounds.
+      const cr = compassIcon.getBoundingClientRect();
+      const compassW = cr.width  || parseInt(getComputedStyle(compassIcon).width)  || 360;
+      const compassH = cr.height || parseInt(getComputedStyle(compassIcon).height) || 360;
+      const offsetX = startPoint.x - compassW / 2;
+      const offsetY = startPoint.y - compassH / 2;
       compassIcon.style.left = `${offsetX}px`;
-      compassIcon.style.top = `${offsetY}px`;
+      compassIcon.style.top  = `${offsetY}px`;
     }
   }
   
@@ -1455,10 +1482,26 @@
     if (!canvas || !section || typeof THREE === 'undefined') {
       return;
     }
+
+    // Defer until the section is actually in the viewport so clientWidth/Height
+    // are non-zero. Without this, aspect = width/0 = Infinity which causes
+    // Three.js to fail creating the WebGL context.
+    if (section.clientHeight === 0) {
+      const observer = new IntersectionObserver((entries, obs) => {
+        if (entries[0].isIntersecting) {
+          obs.disconnect();
+          initFreelance3D();
+        }
+      }, { threshold: 0.01 });
+      observer.observe(section);
+      return;
+    }
+
+    try {
     
     // Scene
     freelance3D.scene = new THREE.Scene();
-    
+
     // Camera
     const width = section.clientWidth;
     const height = section.clientHeight;
@@ -1593,6 +1636,14 @@
       freelance3D.camera.updateProjectionMatrix();
       freelance3D.renderer.setSize(width, height);
     });
+
+    } catch (e) {
+      // WebGL not available (e.g. iOS with WebGL disabled, or too many contexts).
+      // Hide the canvas so the section degrades gracefully.
+      console.warn('initFreelance3D: WebGL unavailable, skipping 3D scene.', e);
+      if (canvas) canvas.style.display = 'none';
+      if (section) section.style.background = '#222222';
+    }
   }
 
   /**
@@ -2103,7 +2154,9 @@
     if (total === 0) {
       let p = 1;
       while (true) {
-        try {
+    try {
+    // Scene
+    freelance3D.scene = new THREE.Scene();
           const res = await fetch(
             `https://api.github.com/users/luismoyano/repos?per_page=100&page=${p}`
           );
@@ -2167,6 +2220,141 @@
   }
 
   // ── Hero arrows (hand-drawn, animate via stroke-dashoffset) ───
+
+  /**
+   * Measure the real pixel positions of the FAB buttons and scroll indicator,
+   * then write SVG path data into the arrow elements using the 0–100 viewBox
+   * coordinate space (preserveAspectRatio="none" maps 0–100 → hero width/height).
+   *
+   * Arrow origins are anchored to the hero-title so they stay near the name
+   * regardless of viewport size.
+   */
+  function buildHeroArrowPaths() {
+    const svg         = document.getElementById('hero-arrows-svg');
+    const heroSection = svg && svg.closest('.hero');
+    if (!svg || !heroSection) return;
+
+    const heroRect = heroSection.getBoundingClientRect();
+    const W = heroRect.width;
+    const H = heroRect.height;
+
+    // Convert a client-space point to 0–100 viewBox units
+    function vb(clientX, clientY) {
+      return {
+        x: ((clientX - heroRect.left) / W) * 100,
+        y: ((clientY - heroRect.top)  / H) * 100,
+      };
+    }
+
+    // Centre of an element in viewBox units
+    function centre(el) {
+      const r = el.getBoundingClientRect();
+      return vb(r.left + r.width / 2, r.top + r.height / 2);
+    }
+
+    // Bottom-centre of an element
+    function bottomCentre(el) {
+      const r = el.getBoundingClientRect();
+      return vb(r.left + r.width / 2, r.bottom);
+    }
+
+    const emailBtn  = document.getElementById('fab-email');
+    const githubBtn = document.getElementById('fab-github');
+    const scrollInd = document.getElementById('scroll-indicator');
+
+    if (!emailBtn || !githubBtn || !scrollInd) return;
+
+    const email   = centre(emailBtn);
+    const github  = centre(githubBtn);
+
+    // For the scroll arrow we want the top of the indicator, not the bottom
+    const scrollR = scrollInd.getBoundingClientRect();
+    const scrollTop = vb(scrollR.left + scrollR.width / 2, scrollR.top);
+
+    // Small arrowhead arms in viewBox units
+    const ARM = 1.8;
+
+    function setArrow(shaftId, headId, labelId, shaft, tip, labelOffset) {
+      const shaftEl = document.getElementById(shaftId);
+      const headEl  = document.getElementById(headId);
+      const labelEl = document.getElementById(labelId);
+
+      if (shaftEl) {
+        shaftEl.setAttribute('d', shaft);
+        // If already animated (ready class present), re-sync dash geometry to new path length
+        if (shaftEl.classList.contains('ready')) {
+          const len = shaftEl.getTotalLength();
+          shaftEl.style.strokeDasharray  = len;
+          shaftEl.style.strokeDashoffset = '0';
+        }
+      }
+
+      if (headEl && tip) {
+        const { tip: t, prev: p } = tip;
+        const dx = t.x - p.x, dy = t.y - p.y;
+        const len = Math.sqrt(dx * dx + dy * dy) || 1;
+        const ux = dx / len, uy = dy / len;
+        const px = -uy, py = ux;
+        const a1 = { x: t.x - ux * ARM + px * ARM * 0.6, y: t.y - uy * ARM + py * ARM * 0.6 };
+        const a2 = { x: t.x - ux * ARM - px * ARM * 0.6, y: t.y - uy * ARM - py * ARM * 0.6 };
+        headEl.setAttribute('d', `M ${a1.x.toFixed(2)} ${a1.y.toFixed(2)} L ${t.x.toFixed(2)} ${t.y.toFixed(2)} L ${a2.x.toFixed(2)} ${a2.y.toFixed(2)}`);
+        // Re-sync arrowhead dash geometry on resize too
+        if (headEl.classList.contains('ready')) {
+          const hlen = headEl.getTotalLength();
+          headEl.style.strokeDasharray  = hlen;
+          headEl.style.strokeDashoffset = '0';
+        }
+      }
+
+      if (labelEl && labelOffset) {
+        labelEl.setAttribute('x', labelOffset.x.toFixed(2));
+        labelEl.setAttribute('y', labelOffset.y.toFixed(2));
+      }
+    }
+
+    // ── Arrow 1: email ───────────────────────────────────────────────
+    // Botón email: centro (80.7, 4.4). Origen fijo en zona media-alta derecha.
+    {
+      const tx = email.x - 3,    ty = email.y + 5;   // tip: (77.7, 9.4)
+      const ox = email.x - 19,   oy = email.y + 16;  // origen: (61.7, 20.4)
+      const cp1x = ox + 8,  cp1y = oy - 6;
+      const cp2x = tx - 4,  cp2y = ty + 8;
+      const shaft = `M ${ox.toFixed(2)} ${oy.toFixed(2)} C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${tx.toFixed(2)} ${ty.toFixed(2)}`;
+      setArrow('hero-arrow-email', 'hero-arrowhead-email', 'hero-label-email',
+        shaft, { tip: { x: tx, y: ty }, prev: { x: cp2x, y: cp2y } },
+        { x: ox, y: oy + 5 }
+      );
+    }
+
+    // ── Arrow 2: github ──────────────────────────────────────────────
+    // Botón github: centro (91.7, 4.4). Origen más abajo y a la derecha del de email.
+    {
+      const tx = github.x - 3,   ty = github.y + 5;  // tip: (88.7, 9.4)
+      const ox = github.x - 16,  oy = github.y + 30; // origen: (75.7, 34.4)
+      const cp1x = ox + 6,  cp1y = oy - 12;
+      const cp2x = tx - 4,  cp2y = ty + 10;
+      const shaft = `M ${ox.toFixed(2)} ${oy.toFixed(2)} C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${tx.toFixed(2)} ${ty.toFixed(2)}`;
+      setArrow('hero-arrow-github', 'hero-arrowhead-github', 'hero-label-github',
+        shaft, { tip: { x: tx, y: ty }, prev: { x: cp2x, y: cp2y } },
+        { x: ox, y: oy + 5 }
+      );
+    }
+
+    // ── Arrow 3: scroll indicator ────────────────────────────────────
+    // Curva suave hacia abajo, sin giro en la base
+    {
+      const tx = scrollTop.x + 3,   ty = scrollTop.y - 5;
+      const ox = scrollTop.x + 14,  oy = scrollTop.y - 20;
+      const cp1x = ox - 2,  cp1y = oy + 8;
+      const cp2x = tx + 4,  cp2y = ty - 8;
+      const shaft = `M ${ox.toFixed(2)} ${oy.toFixed(2)} C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${tx.toFixed(2)} ${ty.toFixed(2)}`;
+      setArrow('hero-arrow-scroll', 'hero-arrowhead-scroll', 'hero-label-scroll',
+        shaft, { tip: { x: tx, y: ty }, prev: { x: cp2x, y: cp2y } },
+        { x: ox + 6, y: oy - 2 }
+      );
+    }
+  }
+
   function initHeroArrows() {
     // Each entry: shaft + its arrowhead + label, with start delay
     const arrows = [
@@ -2289,12 +2477,20 @@
 
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { init(); initFloatingButtons(); initEmailModal(); initHeroArrows(); initI18n(); });
+    document.addEventListener('DOMContentLoaded', () => { init(); initFloatingButtons(); initEmailModal(); buildHeroArrowPaths(); initHeroArrows(); initI18n(); });
   } else {
     init();
     initFloatingButtons();
     initEmailModal();
+    buildHeroArrowPaths();
     initHeroArrows();
     initI18n();
   }
+
+  // Rebuild on resize so arrows keep pointing at the FABs
+  let _arrowResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_arrowResizeTimer);
+    _arrowResizeTimer = setTimeout(buildHeroArrowPaths, 150);
+  });
 })();

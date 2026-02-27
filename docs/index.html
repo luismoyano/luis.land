@@ -19,7 +19,7 @@
           <button class="fab fab-lang" id="lang-en" data-lang="en" title="English" aria-label="Switch to English">🇬🇧</button>
           <button class="fab fab-lang" id="lang-es" data-lang="es" title="Español" aria-label="Cambiar a español">🇪🇸</button>
           <button id="fab-email" class="fab fab-email" data-i18n-title="fab.email.title" title="Enviar email">
-            <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+            <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter">
               <rect x="2" y="4" width="20" height="16" rx="0"/>
               <polyline points="2,4 12,13 22,4"/>
             </svg>
@@ -43,82 +43,18 @@
           Arrow 3 (scroll):  starts centre of hero below the name, curves down
         -->
         <svg id="hero-arrows-svg" class="hero-arrows-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <!-- Arrow paths are written by buildHeroArrowPaths() in app.js -->
+          <path id="hero-arrow-email"     class="hero-arrow"    d="" fill="none" stroke="#1a1a1a" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="hero-arrowhead-email" class="hero-arrowhead" d="" fill="none" stroke="#1a1a1a" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+          <text class="hero-arrow-label" id="hero-label-email"  x="0" y="0" text-anchor="middle" data-i18n="arrow.email">Cartas aquí</text>
 
-          <!--
-            ARROW 1 — "Cartas aquí"
-            Origin: cuadrante superior-izquierdo del hero (cerca del nombre)
-            Tip:    apunta hacia arriba-derecha, hacia el botón email (~83, 7)
-            Corta y curva suave
-          -->
-          <path
-            id="hero-arrow-email"
-            class="hero-arrow"
-            d="M 68 22 C 71 17, 76 11, 82 7"
-            fill="none" stroke="#1a1a1a" stroke-width="0.55"
-            stroke-linecap="round" stroke-linejoin="round"
-          />
-          <!-- Punta email: dos brazos del V abierto en la punta (82, 7) -->
-          <path
-            id="hero-arrowhead-email"
-            class="hero-arrowhead"
-            d="M 78 9 L 82 7 L 80 11"
-            fill="none" stroke="#1a1a1a" stroke-width="0.55"
-            stroke-linecap="round" stroke-linejoin="round"
-          />
-          <text class="hero-arrow-label" x="64" y="26" text-anchor="middle" id="hero-label-email" data-i18n="arrow.email">Cartas aquí</text>
+          <path id="hero-arrow-github"     class="hero-arrow"    d="" fill="none" stroke="#1a1a1a" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="hero-arrowhead-github" class="hero-arrowhead" d="" fill="none" stroke="#1a1a1a" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+          <text class="hero-arrow-label" id="hero-label-github" x="0" y="0" text-anchor="middle" data-i18n="arrow.github">Mi trabajo</text>
 
-          <!--
-            ARROW 2 — "Mi trabajo"
-            Origin: cuadrante inferior-derecho del hero (abajo a la derecha)
-            Tip:    apunta hacia arriba, hacia el botón github (~92, 7)
-            Corta, curva hacia arriba desde abajo
-          -->
-          <path
-            id="hero-arrow-github"
-            class="hero-arrow"
-            d="M 84 28 C 86 20, 89 13, 92 7"
-            fill="none" stroke="#1a1a1a" stroke-width="0.55"
-            stroke-linecap="round" stroke-linejoin="round"
-          />
-          <!--
-            Punta github en (92, 7).
-            Shaft llega con tangente (89,13)→(92,7): dirección unitaria (0.447, -0.894).
-            Brazos calculados alineados con esa dirección, ángulo total ~26°.
-          -->
-          <path
-            id="hero-arrowhead-github"
-            class="hero-arrowhead"
-            d="M 89.4 10.2 L 92 7 L 91.0 11.0"
-            fill="none" stroke="#1a1a1a" stroke-width="0.55"
-            stroke-linecap="round" stroke-linejoin="round"
-          />
-          <text class="hero-arrow-label" x="80" y="33" text-anchor="middle" id="hero-label-github" data-i18n="arrow.github">Mi trabajo</text>
-
-          <!--
-            ARROW 3 — "Conóceme"
-            Flip en Y: origen a la derecha (83,65), tip a la izquierda-abajo (72,84).
-            Apunta hacia el centro, invita a hacer scroll.
-          -->
-          <path
-            id="hero-arrow-scroll"
-            class="hero-arrow"
-            d="M 83 65 C 80 72, 76 78, 72 84"
-            fill="none" stroke="#1a1a1a" stroke-width="0.55"
-            stroke-linecap="round" stroke-linejoin="round"
-          />
-          <!--
-            Punta scroll en (72, 84).
-            Tangente de llegada: (76,78)→(72,84): dirección (-0.555, 0.832).
-            Brazos alineados, ángulo total ~26°.
-          -->
-          <path
-            id="hero-arrowhead-scroll"
-            class="hero-arrowhead"
-            d="M 73.5 80.2 L 72 84 L 75.0 81.2"
-            fill="none" stroke="#1a1a1a" stroke-width="0.55"
-            stroke-linecap="round" stroke-linejoin="round"
-          />
-          <text class="hero-arrow-label" x="83" y="59" text-anchor="middle" id="hero-label-scroll" data-i18n="arrow.scroll">Conóceme</text>
+          <path id="hero-arrow-scroll"     class="hero-arrow"    d="" fill="none" stroke="#1a1a1a" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="hero-arrowhead-scroll" class="hero-arrowhead" d="" fill="none" stroke="#1a1a1a" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+          <text class="hero-arrow-label" id="hero-label-scroll" x="0" y="0" text-anchor="middle" data-i18n="arrow.scroll">Conóceme</text>
         </svg>
 
         <div class="hero-content">
@@ -1215,7 +1151,7 @@
         d=""
         fill="none"
         stroke="#3b82f6"
-        stroke-width="2"
+        stroke-width="3.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
@@ -1226,7 +1162,7 @@
         d=""
         fill="none"
         stroke="#4a4a4a"
-        stroke-width="2"
+        stroke-width="3.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
@@ -1238,7 +1174,7 @@
           d=""
           fill="none"
           stroke="#4a4a4a"
-          stroke-width="2"
+          stroke-width="3.5"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
