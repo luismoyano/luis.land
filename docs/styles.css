@@ -21,6 +21,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -28,6 +29,7 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
+  overflow-x: hidden;
   overflow-x: hidden;
 }
 
@@ -744,6 +746,19 @@ body {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+  }
+
+  .story-text.large {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+  }
+
+  .notebook-section {
+    min-height: 100vh;
+    padding: 3rem 0;
   }
 }
 
