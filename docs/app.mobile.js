@@ -1323,15 +1323,17 @@
     // Store reference to adjust later
     freelance3D.lampLight = lampLight;
     
-    // Orbit Controls
-    freelance3D.controls = new THREE.OrbitControls(freelance3D.camera, canvas);
+    // Orbit Controls — use a detached element as domElement so OrbitControls never
+    // registers touch/pointer listeners on the canvas, keeping scroll unblocked on mobile
+    const detachedEl = document.createElement('div');
+    freelance3D.controls = new THREE.OrbitControls(freelance3D.camera, detachedEl);
     freelance3D.controls.enableDamping = true;
     freelance3D.controls.dampingFactor = 0.05;
     freelance3D.controls.enableZoom = false;
     freelance3D.controls.enablePan = false;
     freelance3D.controls.autoRotate = true;
     freelance3D.controls.autoRotateSpeed = 0.5;
-    freelance3D.controls.enableRotate = false; // Disable touch rotation to avoid blocking scroll on mobile
+    freelance3D.controls.enableRotate = false;
     
     // Load MTL and OBJ model
     const mtlLoader = new THREE.MTLLoader();
