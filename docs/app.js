@@ -42,12 +42,16 @@
   const sectionDivider = document.querySelector('.section-divider');
   const sunsetSection = document.getElementById('sunset-section');
 
-  // Color stops for the timeline (percentage -> color)
+  // Color stops for the timeline — read CSS variables so dark mode works
+  const style = getComputedStyle(document.documentElement);
+  const c1 = style.getPropertyValue('--accent-1').trim() || '#1a1a1a';
+  const c2 = style.getPropertyValue('--accent-2').trim() || '#2e2e2e';
+  const c3 = style.getPropertyValue('--accent-3').trim() || '#4a4a4a';
   const colorStops = [
-    { at: 0,    color: '#1a1a1a' },
-    { at: 0.33, color: '#3d3d3d' },
-    { at: 0.66, color: '#2a2a2a' },
-    { at: 1,    color: '#1a1a1a' }
+    { at: 0,    color: c1 },
+    { at: 0.33, color: c2 },
+    { at: 0.66, color: c3 },
+    { at: 1,    color: c1 }
   ];
 
   // State
@@ -83,7 +87,7 @@
   let scribbleEndPoint = { x: 0, y: 0 }; // Final point of scribble in screen coordinates
   
   // Pencil style config (used for scribble)
-  const PENCIL_COLOR = '#4a4a4a'; // Graphite gray
+  const PENCIL_COLOR = style.getPropertyValue('--accent-3').trim() || '#4a4a4a'; // Graphite gray
   const PENCIL_WIDTH_RATIO = 0.3; // Pencil/scribble is 30% of original stroke width
   
   // Eraser config

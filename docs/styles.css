@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
+
+  /* Light mode defaults */
   --bg-primary: #fafafa;
   --bg-secondary: #f0f0f0;
   --text-primary: #0a0a0b;
@@ -12,6 +14,77 @@
   --accent-3: #4a4a4a;
   --accent-4: #10b981;
   --font-main: 'Space Grotesk', system-ui, sans-serif;
+
+  /* FABs */
+  --fab-bg: rgba(250, 250, 250, 0.85);
+  --fab-border: rgba(10, 10, 11, 0.12);
+  --fab-shadow: rgba(0, 0, 0, 0.08);
+  --fab-hover-bg: rgba(10, 10, 11, 0.05);
+  --fab-hover-border: rgba(10, 10, 11, 0.25);
+  --fab-hover-shadow: rgba(0, 0, 0, 0.12);
+  --fab-lang-active-bg: rgba(10, 10, 11, 0.08);
+  --fab-lang-active-border: rgba(10, 10, 11, 0.3);
+
+  /* Modal */
+  --modal-backdrop: rgba(10, 10, 11, 0.45);
+  --modal-bg: rgba(250, 250, 250, 0.97);
+  --modal-border: rgba(10, 10, 11, 0.12);
+  --modal-shadow: rgba(0, 0, 0, 0.18);
+
+  /* Notebook */
+  --notebook-yellow: #fff9c4;
+  --notebook-line: #e0d9a8;
+  --highlight-color: rgba(232, 205, 120, 0.6);
+
+  /* Map */
+  --map-bg: #5bb3e0;
+  --map-text-pill: rgba(255, 255, 255, 0.85);
+  --divider-bg: #0a0a0b;
+  --divider-illuminated: #ffffff;
+
+  /* Sunset */
+  --sunset-sky-0: #1a0510;
+  --sunset-sky-1: #2d0a22;
+  --sunset-sky-2: #4a1030;
+  --sunset-sky-3: #6d1a3a;
+  --sunset-sky-4: #8a2a40;
+  --sunset-sky-5: #b84530;
+  --sunset-sky-6: #d46025;
+  --sunset-sky-7: #e88020;
+  --sunset-sky-8: #e89040;
+  --sunset-sky-9: #d9863a;
+  --sunset-sky-10: #cc7830;
+  --sunset-mountain-1: #0d0404;
+  --sunset-mountain-2: #180808;
+  --sunset-mountain-3: #250d0d;
+  --sunset-mountain-4: #351212;
+  --sunset-valley: #4d1818;
+  --sunset-terrain-1: #702520;
+  --sunset-terrain-2: #9a3525;
+  --sunset-terrain-2-t90: rgba(154, 53, 37, 0.9);
+  --sunset-terrain-2-t60: rgba(154, 53, 37, 0.6);
+  --sunset-terrain-2-t30: rgba(154, 53, 37, 0.3);
+  --sunset-terrain-2-t10: rgba(154, 53, 37, 0.1);
+  --sunset-terrain-3: #c45030;
+  --sunset-text: #f4c28a;
+
+  /* ISO section */
+  --iso-bg: #8b9a4a;
+  --iso-floor: #b8cc5e;
+  --iso-floor-shadow: rgba(42, 58, 10, 0.25);
+  --iso-grid: rgba(42, 58, 10, 0.25);
+  --iso-label: rgba(42, 58, 10, 0.45);
+  --iso-tooltip-bg: rgba(122, 138, 58, 0.95);
+  --iso-tooltip-border: rgba(42, 58, 10, 0.8);
+  --iso-tooltip-text: #1a2800;
+  --iso-profile-border: rgba(42, 58, 10, 0.6);
+  --iso-cta-text: rgba(26, 40, 0, 0.75);
+  --iso-cta-btn-text: #1a2800;
+  --iso-cta-btn-border: #1a2800;
+  --iso-cta-btn-shadow: rgba(42, 58, 10, 0.35);
+  --iso-cta-btn-hover-bg: #1a2800;
+  --iso-cta-btn-hover-text: #b8cc5e;
+  --iso-contact-color: rgba(26, 40, 0, 0.8);
 }
 
 * {
@@ -21,11 +94,87 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  html {
-    filter: none !important;
-  }
-  img, svg, video {
-    filter: none !important;
+  :root {
+    /* Base */
+    --bg-primary: #0e0e10;
+    --bg-secondary: #1a1a1d;
+    --text-primary: #f0f0ee;
+    --text-secondary: #a1a1aa;
+    --text-muted: #52525b;
+    --accent-1: #e0e0e0;
+    --accent-2: #c8c8c8;
+    --accent-3: #b0b0b0;
+
+    /* FABs */
+    --fab-bg: rgba(20, 20, 22, 0.85);
+    --fab-border: rgba(240, 240, 238, 0.12);
+    --fab-shadow: rgba(0, 0, 0, 0.3);
+    --fab-hover-bg: rgba(240, 240, 238, 0.08);
+    --fab-hover-border: rgba(240, 240, 238, 0.25);
+    --fab-hover-shadow: rgba(0, 0, 0, 0.4);
+    --fab-lang-active-bg: rgba(240, 240, 238, 0.12);
+    --fab-lang-active-border: rgba(240, 240, 238, 0.3);
+
+    /* Modal */
+    --modal-backdrop: rgba(0, 0, 0, 0.65);
+    --modal-bg: rgba(22, 22, 26, 0.97);
+    --modal-border: rgba(240, 240, 238, 0.1);
+    --modal-shadow: rgba(0, 0, 0, 0.5);
+
+    /* Notebook — muted amber on dark */
+    --notebook-yellow: #2a2310;
+    --notebook-line: #3a3218;
+    --highlight-color: rgba(200, 170, 80, 0.5);
+
+    /* Map — deeper ocean blue */
+    --map-bg: #1e4a6e;
+    --map-text-pill: rgba(255, 255, 255, 0.15);
+    --divider-bg: #f0f0ee;
+    --divider-illuminated: #0e0e10;
+
+    /* Sunset — shift to deeper, cooler night tones */
+    --sunset-sky-0: #000008;
+    --sunset-sky-1: #05000f;
+    --sunset-sky-2: #0a0020;
+    --sunset-sky-3: #10002e;
+    --sunset-sky-4: #1a0040;
+    --sunset-sky-5: #2a0a5a;
+    --sunset-sky-6: #3a1470;
+    --sunset-sky-7: #4a2080;
+    --sunset-sky-8: #5a3090;
+    --sunset-sky-9: #4a285a;
+    --sunset-sky-10: #3a1c40;
+    --sunset-mountain-1: #02000a;
+    --sunset-mountain-2: #05000f;
+    --sunset-mountain-3: #080018;
+    --sunset-mountain-4: #0d0022;
+    --sunset-valley: #150030;
+    --sunset-terrain-1: #200845;
+    --sunset-terrain-2: #2e1060;
+    --sunset-terrain-2-t90: rgba(46, 16, 96, 0.9);
+    --sunset-terrain-2-t60: rgba(46, 16, 96, 0.6);
+    --sunset-terrain-2-t30: rgba(46, 16, 96, 0.3);
+    --sunset-terrain-2-t10: rgba(46, 16, 96, 0.1);
+    --sunset-terrain-3: #3c1878;
+    --sunset-text: #c8a8f0;
+
+    /* ISO — darker moss */
+    --iso-bg: #2a3018;
+    --iso-floor: #3a4422;
+    --iso-floor-shadow: rgba(0, 0, 0, 0.4);
+    --iso-grid: rgba(0, 0, 0, 0.3);
+    --iso-label: rgba(180, 200, 100, 0.5);
+    --iso-tooltip-bg: rgba(40, 50, 20, 0.97);
+    --iso-tooltip-border: rgba(140, 170, 60, 0.5);
+    --iso-tooltip-text: #b8cc5e;
+    --iso-profile-border: rgba(140, 170, 60, 0.4);
+    --iso-cta-text: rgba(180, 200, 120, 0.85);
+    --iso-cta-btn-text: #b8cc5e;
+    --iso-cta-btn-border: #b8cc5e;
+    --iso-cta-btn-shadow: rgba(0, 0, 0, 0.4);
+    --iso-cta-btn-hover-bg: #b8cc5e;
+    --iso-cta-btn-hover-text: #1a2800;
+    --iso-contact-color: rgba(180, 200, 120, 0.8);
   }
 }
 
@@ -36,8 +185,8 @@ html {
 
 body {
   font-family: var(--font-main);
-  background-color: #fafafa !important;
-  color: #0a0a0b !important;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -49,8 +198,6 @@ body {
 
 /* Notebook Background - Positioned inside notebook-section only */
 .notebook-bg {
-  --notebook-yellow: #fff9c4;
-  --notebook-line: #e0d9a8;
   --grid-size: 24px;
   
   position: absolute;
@@ -156,7 +303,7 @@ body {
   position: relative;
   display: inline-block;
   width: 3px;
-  background: #1a1a1a;
+  background: var(--accent-1);
   margin-left: 6px;
   height: 1em;
   vertical-align: top;
@@ -173,7 +320,7 @@ body {
   translate: -50% 0;
   width: 0.35em;
   height: 3px;
-  background: #1a1a1a;
+  background: var(--accent-1);
   border-radius: 1px;
 }
 
@@ -299,8 +446,8 @@ body {
   --highlight-progress: 0%;
   background: linear-gradient(
     90deg,
-    rgba(232, 205, 120, 0.6) 0%,
-    rgba(232, 205, 120, 0.6) var(--highlight-progress),
+    var(--highlight-color) 0%,
+    var(--highlight-color) var(--highlight-progress),
     transparent var(--highlight-progress),
     transparent 100%
   );
@@ -351,8 +498,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 2rem;
-  padding: 6rem 2rem 54vh;  /* bottom padding reserves space for the floor */
-  background: #8b9a4a;
+  padding: 6rem 2rem 54vh;
+  background: var(--iso-bg);
   overflow: hidden;
 }
 
@@ -394,10 +541,10 @@ body {
   bottom: 0;
   left: 50%;
   translate: -50% 0;
-  background: #b8cc5e;
+  background: var(--iso-floor);
   transform: rotateX(55deg);
   transform-origin: center bottom;
-  box-shadow: 0 -40px 120px rgba(42, 58, 10, 0.25);
+  box-shadow: 0 -40px 120px var(--iso-floor-shadow);
 }
 
 /* Grid lines on the floor */
@@ -406,8 +553,8 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(42,58,10,0.25) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(42,58,10,0.25) 1px, transparent 1px);
+    linear-gradient(var(--iso-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--iso-grid) 1px, transparent 1px);
   background-size: 80px 80px;
 }
 
@@ -424,7 +571,7 @@ body {
 
   font-family: 'Press Start 2P', monospace;
   font-size: clamp(0.9rem, 2vw, 1.4rem);
-  color: rgba(42, 58, 10, 0.45);
+  color: var(--iso-label);
   letter-spacing: 0.15em;
   text-transform: uppercase;
   user-select: none;
@@ -478,11 +625,11 @@ body {
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: #1a2800;
+  color: var(--iso-tooltip-text);
   white-space: nowrap;
 
-  background: rgba(122, 138, 58, 0.95);
-  border: 1px solid rgba(42, 58, 10, 0.8);
+  background: var(--iso-tooltip-bg);
+  border: 1px solid var(--iso-tooltip-border);
   padding: 4px 10px;
   box-shadow:
     0 0 10px rgba(42, 58, 10, 0.4),
@@ -523,8 +670,8 @@ body {
   height: 130px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid rgba(42, 58, 10, 0.6);
-  box-shadow: 0 0 20px rgba(42, 58, 10, 0.25);
+  border: 3px solid var(--iso-profile-border);
+  box-shadow: 0 0 20px var(--iso-floor-shadow);
 }
 
 .profile-placeholder {
@@ -553,7 +700,7 @@ body {
 }
 
 .iso-cta .story-text {
-  color: rgba(26, 40, 0, 0.75);
+  color: var(--iso-cta-text);
   max-width: 480px;
   font-family: 'Press Start 2P', monospace;
   font-size: clamp(0.5rem, 1.2vw, 0.7rem);
@@ -564,11 +711,11 @@ body {
   display: inline-block;
   font-family: 'Press Start 2P', monospace;
   font-size: clamp(0.75rem, 1.8vw, 1rem);
-  color: #1a2800;
+  color: var(--iso-cta-btn-text);
   text-decoration: none;
   padding: 0.9rem 2rem;
-  border: 2px solid #1a2800;
-  box-shadow: 4px 4px 0 rgba(42, 58, 10, 0.35);
+  border: 2px solid var(--iso-cta-btn-border);
+  box-shadow: 4px 4px 0 var(--iso-cta-btn-shadow);
   background: transparent;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   cursor: pointer;
@@ -578,9 +725,9 @@ body {
 }
 
 .cta-button:hover {
-  background: #1a2800;
-  color: #b8cc5e;
-  box-shadow: 2px 2px 0 rgba(42, 58, 10, 0.5);
+  background: var(--iso-cta-btn-hover-bg);
+  color: var(--iso-cta-btn-hover-text);
+  box-shadow: 2px 2px 0 var(--iso-cta-btn-shadow);
 }
 
 .cta-arrow {
@@ -612,7 +759,7 @@ body {
 }
 
 .contact-link {
-  color: rgba(26, 40, 0, 0.8);
+  color: var(--iso-contact-color);
   text-decoration: none;
   font-family: 'Press Start 2P', monospace;
   font-size: 0.65rem;
@@ -622,9 +769,9 @@ body {
 }
 
 .contact-link:hover {
-  color: #1a2800;
-  border-bottom-color: #1a2800;
-  text-shadow: 0 0 10px rgba(42, 58, 10, 0.5);
+  color: var(--iso-cta-btn-text);
+  border-bottom-color: var(--iso-cta-btn-border);
+  text-shadow: 0 0 10px var(--iso-cta-btn-shadow);
 }
 
 /* ── Hero arrows overlay ─────────────────────────────────────── */
@@ -644,6 +791,7 @@ body {
   /* stroke-dasharray and stroke-dashoffset set by JS after measuring path length */
   opacity: 0;
   transition: opacity 0.4s ease;
+  stroke: var(--text-primary);
 }
 
 .hero-arrow.ready,
@@ -655,7 +803,7 @@ body {
   font-family: 'Caveat', cursive;
   font-size: 2.6px; /* in viewBox units (100 = 100vw) */
   font-weight: 400;
-  fill: #2e2e2e;
+  fill: var(--text-secondary);
   opacity: 0;
   transition: opacity 0.5s ease;
 }
@@ -684,9 +832,9 @@ body {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-primary);
-  background: rgba(250, 250, 250, 0.85);
-  border: 1px solid rgba(10, 10, 11, 0.12);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  background: var(--fab-bg);
+  border: 1px solid var(--fab-border);
+  box-shadow: 0 1px 4px var(--fab-shadow);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   text-decoration: none;
@@ -697,9 +845,9 @@ body {
 }
 
 .fab:hover {
-  background: rgba(10, 10, 11, 0.05);
-  border-color: rgba(10, 10, 11, 0.25);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  background: var(--fab-hover-bg);
+  border-color: var(--fab-hover-border);
+  box-shadow: 0 2px 8px var(--fab-hover-shadow);
 }
 
 .fab-icon {
@@ -728,13 +876,13 @@ body {
   font-size: 1rem;
   line-height: 1;
   border: none;
-  background: rgba(250, 250, 250, 0.85);
-  border: 1px solid rgba(10, 10, 11, 0.12);
+  background: var(--fab-bg);
+  border: 1px solid var(--fab-border);
 }
 
 .fab-lang.active {
-  background: rgba(10, 10, 11, 0.08);
-  border-color: rgba(10, 10, 11, 0.3);
+  background: var(--fab-lang-active-bg);
+  border-color: var(--fab-lang-active-border);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -798,7 +946,7 @@ body {
 .map-section {
   position: relative;
   min-height: 200vh;
-  background-color: #5bb3e0; /* Base blue color so fade-in happens over blue */
+  background-color: var(--map-bg);
 }
 
 /* Extend blue background upward to cover gap from rotated notebook section */
@@ -809,7 +957,7 @@ body {
   left: 0;
   width: 100%;
   height: 150px;
-  background-color: #5bb3e0;
+  background-color: var(--map-bg);
   z-index: -1;
 }
 
@@ -863,7 +1011,7 @@ body {
 
 /* Map section text with highlight effect */
 .map-text .story-line {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--map-text-pill);
   padding: 0.1em 0.3em;
   margin: 0.1em -0.3em;
   border-radius: 4px;
@@ -875,16 +1023,16 @@ body {
 .section-divider {
   width: 100%;
   height: 100px;
-  background-color: #0a0a0b;
+  background-color: var(--divider-bg);
   position: relative;
-  z-index: 50; /* Above sparkles to hide them initially */
-  overflow: visible; /* Allow sparkles to overflow into sunset section */
+  z-index: 50;
+  overflow: visible;
   transition: background-color 0.3s ease-out;
 }
 
-/* Divider illumination: black → white (reversible with transition) */
+/* Divider illumination: reversible with transition */
 .section-divider.illuminating {
-  background-color: #ffffff;
+  background-color: var(--divider-illuminated);
 }
 
 /* Sparkle container - positioned at bottom edge of divider, extends downward */
@@ -971,20 +1119,19 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  /* Gradient: Firewatch sunset/dusk style - warm oranges to deep purple */
   background: linear-gradient(
     to bottom,
-    #1a0510 0%,      /* Near black with slight purple */
-    #2d0a22 15%,     /* Very dark magenta */
-    #4a1030 28%,     /* Deep burgundy */
-    #6d1a3a 40%,     /* Dark magenta-red */
-    #8a2a40 50%,     /* Rich crimson */
-    #b84530 60%,     /* Burnt orange-red */
-    #d46025 70%,     /* Deep orange */
-    #e88020 80%,     /* Warm orange */
-    #e89040 88%,     /* Muted golden orange */
-    #d9863a 95%,     /* Soft amber */
-    #cc7830 100%     /* Warm burnt orange at horizon */
+    var(--sunset-sky-0)  0%,
+    var(--sunset-sky-1)  15%,
+    var(--sunset-sky-2)  28%,
+    var(--sunset-sky-3)  40%,
+    var(--sunset-sky-4)  50%,
+    var(--sunset-sky-5)  60%,
+    var(--sunset-sky-6)  70%,
+    var(--sunset-sky-7)  80%,
+    var(--sunset-sky-8)  88%,
+    var(--sunset-sky-9)  95%,
+    var(--sunset-sky-10) 100%
   );
 }
 
@@ -999,43 +1146,40 @@ body {
   object-position: bottom;
 }
 
-/* SVG Layer colors - Firewatch sunset style
-   FAR layers (top/low Y) = DARK silhouettes against sky
-   CLOSE layers (bottom/high Y) = LIGHTER, catching warm horizon glow */
 .sunset-mountains-svg .layer-bg {
-  fill: transparent; /* Hide background to show CSS gradient */
+  fill: transparent;
 }
 
 .sunset-mountains-svg .layer-mountain-1 {
-  fill: #0d0404; /* Near black silhouette - furthest mountains */
+  fill: var(--sunset-mountain-1);
 }
 
 .sunset-mountains-svg .layer-mountain-2 {
-  fill: #180808; /* Very dark */
+  fill: var(--sunset-mountain-2);
 }
 
 .sunset-mountains-svg .layer-mountain-3 {
-  fill: #250d0d; /* Dark burgundy */
+  fill: var(--sunset-mountain-3);
 }
 
 .sunset-mountains-svg .layer-mountain-4 {
-  fill: #351212; /* Dark red-brown */
+  fill: var(--sunset-mountain-4);
 }
 
 .sunset-mountains-svg .layer-valley-trees {
-  fill: #4d1818; /* Deep maroon */
+  fill: var(--sunset-valley);
 }
 
 .sunset-mountains-svg .layer-terrain-1 {
-  fill: #702520; /* Dark crimson */
+  fill: var(--sunset-terrain-1);
 }
 
 .sunset-mountains-svg .layer-terrain-2 {
-  fill: #9a3525; /* Burnt sienna */
+  fill: var(--sunset-terrain-2);
 }
 
 .sunset-mountains-svg .layer-terrain-3 {
-  fill: #c45030; /* Warm orange - closest, catches horizon glow */
+  fill: var(--sunset-terrain-3);
 }
 
 .sunset-section .story-content {
@@ -1043,7 +1187,7 @@ body {
 }
 
 .sunset-section .story-text.accent {
-  color: #f4c28a; /* Warm orange to contrast with dark background */
+  color: var(--sunset-text);
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -1185,11 +1329,11 @@ body {
   z-index: 3; /* Above the GIF and overlay */
   background: linear-gradient(
     to bottom,
-    #9a3525 0%,        /* Match sunset terrain-2 color */
-    rgba(154, 53, 37, 0.9) 15%,
-    rgba(154, 53, 37, 0.6) 35%,
-    rgba(154, 53, 37, 0.3) 55%,
-    rgba(154, 53, 37, 0.1) 75%,
+    var(--sunset-terrain-2) 0%,
+    var(--sunset-terrain-2-t90) 15%,
+    var(--sunset-terrain-2-t60) 35%,
+    var(--sunset-terrain-2-t30) 55%,
+    var(--sunset-terrain-2-t10) 75%,
     transparent 100%
   );
   pointer-events: none;
@@ -1233,7 +1377,7 @@ body {
 .email-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(10, 10, 11, 0.45);
+  background: var(--modal-backdrop);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   cursor: pointer;
@@ -1241,9 +1385,9 @@ body {
 
 .email-modal-card {
   position: relative;
-  background: rgba(250, 250, 250, 0.97);
-  border: 1px solid rgba(10, 10, 11, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  background: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  box-shadow: 0 8px 32px var(--modal-shadow);
   border-radius: 4px;
   padding: 2.5rem 3rem;
   display: flex;
