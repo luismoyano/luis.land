@@ -1792,16 +1792,13 @@
 
     // Slow scroll-to-top CTA
     const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
-    const scrollBlockOverlay = document.getElementById('scroll-block-overlay');
 
-    // Overlay needs active (non-passive) listeners that call preventDefault to truly
-    // block native scroll during the animation — pointer-events:all alone is not enough
-    if (scrollBlockOverlay) {
-      const absorbEvent = (e) => { if (scrollBlockOverlay.classList.contains('active')) e.preventDefault(); };
-      scrollBlockOverlay.addEventListener('touchstart', absorbEvent, { passive: false });
-      scrollBlockOverlay.addEventListener('touchmove',  absorbEvent, { passive: false });
-      scrollBlockOverlay.addEventListener('wheel',      absorbEvent, { passive: false });
-    }
+    // Block touch events at the document level during scroll-to-top animation.
+    // Must be on document (not an overlay element) with passive:false so preventDefault()
+    // actually stops the browser from interrupting window.scrollTo() on touch.
+    const blockTouch = (e) => { if (isProgrammaticScrolling) e.preventDefault(); };
+    document.addEventListener('touchstart', blockTouch, { passive: false });
+    document.addEventListener('touchmove',  blockTouch, { passive: false });
 
     if (scrollToTopBtn) {
       scrollToTopBtn.addEventListener('click', () => {
@@ -1815,7 +1812,6 @@
         scrollToTopBtn.classList.add('is-scrolling');
 
         // Block all touch/click input during the animation to prevent scroll corruption
-        if (scrollBlockOverlay) scrollBlockOverlay.classList.add('active');
 
         // Signal to lockScroll() and updateTimeline() that we own the scroll
         isProgrammaticScrolling = true;
@@ -1893,8 +1889,6 @@
             // Re-enable tooltips and restore idle arrow animation
             tooltipsEnabled = true;
             scrollToTopBtn.classList.remove('is-scrolling');
-            // Remove input block overlay
-            if (scrollBlockOverlay) scrollBlockOverlay.classList.remove('active');
           }
         }
 
