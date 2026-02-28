@@ -289,7 +289,6 @@ body {
 /* Story lines for animated highlight effect */
 .story-line {
   display: block;
-  white-space: nowrap;
   padding: 0.05em 0.15em;
   margin: 0 -0.15em;
   border-radius: 3px;
@@ -498,6 +497,18 @@ body {
 #iso-tooltip-overlay.visible {
   opacity: 1;
   scale: 1;
+}
+
+/* ── Scroll-block overlay: swallows all input during scroll-to-top animation ── */
+#scroll-block-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+#scroll-block-overlay.active {
+  pointer-events: all;
 }
 
 /* ── Profile ── */

@@ -646,7 +646,7 @@
   let sparklesData = []; // Array of sparkle data objects for JS-controlled animation
   let pendingSparkleUpdate = null; // RAF handle for throttling
   let lastSparkleProgress = -1; // Track last progress to avoid redundant updates
-  const SPARKLE_COUNT = 200; // Number of sparkles to spawn
+  const SPARKLE_COUNT = 80; // Number of sparkles to spawn (reduced for mobile performance)
   // Sparkle animation is based on sunset section scroll, not map section
   
   // Map colors
@@ -1331,6 +1331,7 @@
     freelance3D.controls.enablePan = false;
     freelance3D.controls.autoRotate = true;
     freelance3D.controls.autoRotateSpeed = 0.5;
+    freelance3D.controls.enableRotate = false; // Disable touch rotation to avoid blocking scroll on mobile
     
     // Load MTL and OBJ model
     const mtlLoader = new THREE.MTLLoader();
@@ -1789,6 +1790,7 @@
 
     // Slow scroll-to-top CTA
     const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
+    const scrollBlockOverlay = document.getElementById('scroll-block-overlay');
     if (scrollToTopBtn) {
       scrollToTopBtn.addEventListener('click', () => {
         const startY = window.scrollY;
@@ -1799,6 +1801,9 @@
         tooltipsEnabled = false;
         if (isoTooltipOverlay) isoTooltipOverlay.textContent = '';
         scrollToTopBtn.classList.add('is-scrolling');
+
+        // Block all touch/click input during the animation to prevent scroll corruption
+        if (scrollBlockOverlay) scrollBlockOverlay.classList.add('active');
 
         // Signal to lockScroll() and updateTimeline() that we own the scroll
         isProgrammaticScrolling = true;
@@ -1876,6 +1881,8 @@
             // Re-enable tooltips and restore idle arrow animation
             tooltipsEnabled = true;
             scrollToTopBtn.classList.remove('is-scrolling');
+            // Remove input block overlay
+            if (scrollBlockOverlay) scrollBlockOverlay.classList.remove('active');
           }
         }
 
