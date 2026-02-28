@@ -1793,6 +1793,16 @@
     // Slow scroll-to-top CTA
     const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
     const scrollBlockOverlay = document.getElementById('scroll-block-overlay');
+
+    // Overlay needs active (non-passive) listeners that call preventDefault to truly
+    // block native scroll during the animation — pointer-events:all alone is not enough
+    if (scrollBlockOverlay) {
+      const absorbEvent = (e) => { if (scrollBlockOverlay.classList.contains('active')) e.preventDefault(); };
+      scrollBlockOverlay.addEventListener('touchstart', absorbEvent, { passive: false });
+      scrollBlockOverlay.addEventListener('touchmove',  absorbEvent, { passive: false });
+      scrollBlockOverlay.addEventListener('wheel',      absorbEvent, { passive: false });
+    }
+
     if (scrollToTopBtn) {
       scrollToTopBtn.addEventListener('click', () => {
         const startY = window.scrollY;
