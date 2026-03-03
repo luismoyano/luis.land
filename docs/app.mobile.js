@@ -1773,11 +1773,58 @@
     walkerRAF = requestAnimationFrame(walkerTick);
   }
 
+  /**
+   * Set up IntersectionObserver for section view analytics events
+   * Fires a 'section-view' Umami event once per section when it enters the viewport
+   */
+  function setupSectionObserver() {
+    const sectionIds = [
+      'notebook-section',
+      'map-section',
+      'sunset-section',
+      'startups-section',
+      'freelance-section',
+    ];
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -20% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id || 'hero';
+          window.umami?.track('section-view', { section: id });
+          observer.unobserve(entry.target); // fire only once per section
+        }
+      });
+    }, observerOptions);
+
+    // Observe named sections
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    // Hero section (no id, use the .hero class)
+    const heroEl = document.querySelector('.hero');
+    if (heroEl) observer.observe(heroEl);
+  }
+
   function init() {
     // Lock scroll initially
     lockScroll();
     
     setupRevealObserver();
+    setupSectionObserver();
+
+    // Analytics: track FAB button clicks
+    const githubBtn = document.getElementById('fab-github');
+    if (githubBtn) {
+      githubBtn.addEventListener('click', () => window.umami?.track('github-click'));
+    }
     
     // Preload sparkles immediately on init
     preloadSparkles();
@@ -1806,6 +1853,7 @@
 
     if (scrollToTopBtn) {
       scrollToTopBtn.addEventListener('click', () => {
+        window.umami?.track('lets-talk-click');
         const startY = window.scrollY;
         const duration = 24000; // ms — slow enough to appreciate the reversible effects
         let startTime = null;
@@ -2007,6 +2055,7 @@
       modal.hidden = false;
       document.body.style.overflow = 'hidden';
       closeBtn && closeBtn.focus();
+      window.umami?.track('email-click');
     }
 
     function closeModal() {
