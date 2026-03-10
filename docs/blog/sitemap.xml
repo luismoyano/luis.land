@@ -2,29 +2,29 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:3000/blog/</loc>
+    <loc>https://luis.land/blog/</loc>
     <lastmod>2026-03-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/posts/json-logic-ruby-18-18-benchmark-results/</loc>
+    <loc>https://luis.land/blog/posts/json-logic-ruby-18-18-benchmark-results/</loc>
     <lastmod>2026-03-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/posts/</loc>
+    <loc>https://luis.land/blog/posts/</loc>
     <lastmod>2026-03-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/posts/hot-path-loops-and-deleting-a-class/</loc>
+    <loc>https://luis.land/blog/posts/hot-path-loops-and-deleting-a-class/</loc>
     <lastmod>2026-03-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/posts/killing-the-preprocessing-passes-datahash-hashfetch/</loc>
+    <loc>https://luis.land/blog/posts/killing-the-preprocessing-passes-datahash-hashfetch/</loc>
     <lastmod>2026-03-08T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/posts/optimizing-json-logic-ruby-from-correct-to-competitive/</loc>
+    <loc>https://luis.land/blog/posts/optimizing-json-logic-ruby-from-correct-to-competitive/</loc>
     <lastmod>2026-03-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/posts/benchmarking-json-logic-ruby-gems/</loc>
+    <loc>https://luis.land/blog/posts/benchmarking-json-logic-ruby-gems/</loc>
     <lastmod>2026-03-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:3000/blog/categories/</loc>
+    <loc>https://luis.land/blog/categories/</loc>
   </url><url>
-    <loc>http://localhost:3000/blog/tags/</loc>
+    <loc>https://luis.land/blog/tags/</loc>
   </url>
 </urlset>
