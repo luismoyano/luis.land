@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on dev vlog — luis.land</title>
+    <link>http://localhost:3000/blog/posts/</link>
+    <description>Recent content in Posts on dev vlog — luis.land</description>
+    <generator>Hugo</generator>
+    <language>es</language>
+    <lastBuildDate>Tue, 10 Mar 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:3000/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hola, esto es el dev vlog</title>
+      <link>http://localhost:3000/blog/posts/hola-mundo/</link>
+      <pubDate>Tue, 10 Mar 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:3000/blog/posts/hola-mundo/</guid>
+      <description>&lt;p&gt;Este es el primer post del dev vlog de luis.land.&lt;/p&gt;&#xA;&lt;p&gt;Aquí voy a escribir sobre cosas que construyo, bugs que encuentro, ideas que no sé si van a funcionar y procesos que me resultan interesantes.&lt;/p&gt;&#xA;&lt;p&gt;No hay formato fijo. A veces será largo, a veces tres líneas.&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;El setup de este blog es un buen ejemplo de lo que va a ir aquí. Hugo, sin framework de frontend, viviendo en un subdirectorio de una landing hecha a mano. Sin npm, sin build step de JavaScript, sin dependencias absurdas. Solo Markdown y un tema que pesa menos de 200 líneas.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

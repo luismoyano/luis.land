@@ -1,0 +1,4 @@
+baseURL = 'https://luis.land/blog/'
+
+[params]
+  homeURL = 'https://luis.land'

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://localhost:3000/blog/</loc>
+    <lastmod>2026-03-10T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:3000/blog/posts/hola-mundo/</loc>
+    <lastmod>2026-03-10T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:3000/blog/posts/</loc>
+    <lastmod>2026-03-10T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:3000/blog/categories/</loc>
+  </url><url>
+    <loc>http://localhost:3000/blog/tags/</loc>
+  </url>
+</urlset>

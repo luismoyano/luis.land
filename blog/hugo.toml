@@ -1,0 +1,13 @@
+baseURL = 'https://luis.land/blog/'
+languageCode = 'es'
+title = 'dev vlog — luis.land'
+theme = 'luisland'
+publishDir = '../docs/blog'
+
+[params]
+  author = 'Luis'
+  description = 'Notas sobre lo que construyo.'
+  homeURL = 'https://luis.land'
+
+[markup.goldmark.renderer]
+  unsafe = true

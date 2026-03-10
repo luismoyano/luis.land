@@ -2,3 +2,5 @@ dev_files/
 node_modules/
 .idea/
 .DS_Store
+blog/resources/
+blog/.hugo_build.lock
