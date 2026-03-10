@@ -1,12 +1,12 @@
 baseURL = 'https://luis.land/blog/'
 languageCode = 'es'
-title = 'dev vlog — luis.land'
+title = 'dev blog — luis.land'
 theme = 'luisland'
 publishDir = '../docs/blog'
 
 [params]
-  author = 'Luis'
-  description = 'Notas sobre lo que construyo.'
+  author = 'Luis Moyano'
+  description = 'Notes about things I build; JSON Logic, Everything Ruby, and more.'
   homeURL = 'https://luis.land'
 
 [markup.goldmark.renderer]

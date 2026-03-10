@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on dev vlog — luis.land</title>
+    <title>Posts on dev blog — luis.land</title>
     <link>http://localhost:3000/blog/posts/</link>
-    <description>Recent content in Posts on dev vlog — luis.land</description>
+    <description>Recent content in Posts on dev blog — luis.land</description>
     <generator>Hugo</generator>
     <language>es</language>
     <lastBuildDate>Tue, 10 Mar 2026 00:00:00 +0000</lastBuildDate>
