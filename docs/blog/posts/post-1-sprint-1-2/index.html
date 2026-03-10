@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Optimizing a JSON Logic Gem - From correct to competitive: quick wins and the big jump — dev blog — luis.land</title>
+
+
+
+<meta name="description" content="Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+When I first got shiny_json_logic to 100% test compliance, I still wanted to …">
+<link rel="canonical" href="http://localhost:3000/blog/posts/post-1-sprint-1-2/">
+
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Optimizing a JSON Logic Gem - From correct to competitive: quick wins and the big jump">
+<meta property="og:description" content="Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+When I first got shiny_json_logic to 100% test compliance, I still wanted to …">
+<meta property="og:url" content="http://localhost:3000/blog/posts/post-1-sprint-1-2/">
+<meta property="og:site_name" content="luis.land">
+
+<meta property="article:published_time" content="2026-03-10T00:00:00Z">
+<meta property="article:author" content="Luis Moyano">
+
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Optimizing a JSON Logic Gem - From correct to competitive: quick wins and the big jump">
+<meta name="twitter:description" content="Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+When I first got shiny_json_logic to 100% test compliance, I still wanted to …">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/blog/css/blog.css">
+<script defer src="https://analytics.luis.land/script.js" data-website-id="e8e17ea8-77be-4d17-b374-7f9885557cc7" data-domains="luis.land"></script>
+
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="site-nav">
+    <a href="/" class="nav-back">← luis.land</a>
+    <a href="/" class="nav-title">dev vlog</a>
+  </nav>
+</header>
+
+    <main class="container">
+      
+<article class="post">
+  <header class="post-header">
+    <time class="post-date" datetime="2026-03-10">10 Mar 2026</time>
+    <h1 class="post-title">Optimizing a JSON Logic Gem - From correct to competitive: quick wins and the big jump</h1>
+  </header>
+  <div class="post-content">
+    <p><em>Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.</em></p>
+<hr>
+<p>When I first got <code>shiny_json_logic</code> to 100% test compliance, I still wanted to make my gem as competitive as possible for production; I myself use it and some other devs I know in their companies started to pick it up and I truly wanted them to choose my work over the other options around, so I decided to run a benchmark and see how my gem compared against the others&hellip;</p>
+<p>Aaaaaaand&hellip;. The results were demoralizing.</p>
+<p>In absolutely every ruby version and comparison mode <code>shiny_json_logic</code> was the slowest gem by a significant margin. In the fair comparison mode, it was about 20k ops/s while <code>json_logic</code> was about 80k ops/s.</p>
+<h2 id="why-was-it-slow">Why was it slow?</h2>
+<p>Comparing my gem with the fastest (albeit abandoned) <code>json_logic</code> I found that theirs is  essentially a flat hash of lambdas:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">OPERATIONS</span> <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;+&#34;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#f92672">-&gt;</span>(args, data) { args<span style="color:#f92672">.</span>map { <span style="color:#f92672">|</span>a<span style="color:#f92672">|</span> apply(a, data) }<span style="color:#f92672">.</span>sum },
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;==&#34;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#f92672">-&gt;</span>(args, data) { apply(args<span style="color:#f92672">[</span><span style="color:#ae81ff">0</span><span style="color:#f92672">]</span>, data) <span style="color:#f92672">==</span> apply(args<span style="color:#f92672">[</span><span style="color:#ae81ff">1</span><span style="color:#f92672">]</span>, data) }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>shiny_json_logic</code> on the other hand had a proper class hierarchy: <code>Operations::Base</code>, <code>Iterable::Base</code>, mixins for error handling and numeric validation, a scope stack for variable resolution and lazy evaluation for every possible iterative operation. And also every call was instantiating objects.</p>
+<p>That class structure is partially the reason <em>why</em> we get 100% compliance as it helped having everything around encapsulated and readable, but was also as I learned during my working days that it was spending a lot of unneeded resources for the sake of comfort.</p>
+<p>Can we keep the structure and kill unnecessary allocations and bottlenecks?</p>
+<h2 id="sprint-1--quick-wins-13">Sprint 1 — Quick wins (+13%)</h2>
+<p>First pass: the easy things.</p>
+<p><strong><code>OperatorSolver</code> class → module with frozen constant.</strong> <code>OperatorSolver</code> is the dispatch table — the thing that maps operator strings like <code>&quot;+&quot;</code> or <code>&quot;if&quot;</code> to their implementation classes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># Before: a class you had to instantiate</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">OperatorSolver</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">initialize</span>
+</span></span><span style="display:flex;"><span>    @solvers <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;+&#34;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Addition</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;if&#34;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">If</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># ... ~30 more</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">solve</span>(op)
+</span></span><span style="display:flex;"><span>    @solvers<span style="color:#f92672">[</span>op<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>solver <span style="color:#f92672">=</span> <span style="color:#66d9ef">OperatorSolver</span><span style="color:#f92672">.</span>new  <span style="color:#75715e"># allocated on every apply</span>
+</span></span><span style="display:flex;"><span>solver<span style="color:#f92672">.</span>solve(<span style="color:#e6db74">&#34;+&#34;</span>)
+</span></span></code></pre></div><p>It didn&rsquo;t need to be a class. There&rsquo;s no mutable state — it&rsquo;s a fixed mapping that never changes after load. Converted to a module with a frozen constant:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># After: a module with a frozen constant</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">module</span> OperatorSolver
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">SOLVERS</span> <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;+&#34;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Addition</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;if&#34;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">If</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># ...</span>
+</span></span><span style="display:flex;"><span>  }<span style="color:#f92672">.</span>freeze
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">OperatorSolver</span><span style="color:#f92672">::</span><span style="color:#66d9ef">SOLVERS</span><span style="color:#f92672">[</span><span style="color:#e6db74">&#34;+&#34;</span><span style="color:#f92672">]</span>  <span style="color:#75715e"># direct hash lookup, no object allocation</span>
+</span></span></code></pre></div><p>One fewer object allocated per <code>apply</code> call. Small, but it&rsquo;s the kind of thing that adds up across 600 tests × thousands of iterations.</p>
+<p><strong><code>numeric_string?</code> — rescue → regex.</strong> We were detecting numeric strings with <code>Float(value) rescue false</code> and I got to learn that rescuing errors in Ruby is expensive! So i replaced it with a compiled regex:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">NUMERIC_REGEX</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">/\A[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?\z/</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">numeric_string?</span>(val)
+</span></span><span style="display:flex;"><span>  val<span style="color:#f92672">.</span>is_a?(String) <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">NUMERIC_REGEX</span><span style="color:#f92672">.</span>match?(val)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>The regex is compiled once at load time. and the comparisons are as fast as they can be.</p>
+<p><strong><code>frozen_string_literal: true</code> across all <code>lib/</code> files.</strong> String literals in Ruby are normally mutable objects — each one gets allocated. <code># frozen_string_literal: true</code> makes them frozen constants shared across calls. For a hot path that builds operator names and key strings constantly, this matters.</p>
+<p>Total gain: <strong>+13%</strong>. Not dramatic, but it told me the approach was working.</p>
+<h2 id="sprint-2--static-operations-81">Sprint 2 — Static operations (+81%)</h2>
+<p>This was the big one.</p>
+<p>On <code>shiny_json_logic</code> every operation was an instantiated object; <code>Operations::Addition.new.call(rules, data)</code>, because of this we would run the whole process of creating an object, initializing it and then evaluating the operation.</p>
+<p>In order to fix this, I turned every operation to a static <code>self.call</code> method avoiding each instantiation entirely. The code went from this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># Before</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Addition</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">call</span>(args, data)
+</span></span><span style="display:flex;"><span>    args<span style="color:#f92672">.</span>map { <span style="color:#f92672">|</span>a<span style="color:#f92672">|</span> apply(a, data) }<span style="color:#f92672">.</span>sum
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Addition</span><span style="color:#f92672">.</span>new<span style="color:#f92672">.</span>call(args, data)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># After</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">module</span> Operations::Addition
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">call</span>(args, scope_stack)
+</span></span><span style="display:flex;"><span>    resolve_rules(args, scope_stack)<span style="color:#f92672">.</span>sum
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Operations</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Plus</span><span style="color:#f92672">.</span>call(args, scope_stack)
+</span></span></code></pre></div><p>This cascaded through the entire codebase. <code>Operations::Base</code>, <code>Iterable::Base</code>, all the mixins — everything became module functions or <code>self.*</code> methods. Object allocation per operation: eliminated.</p>
+<p>The second big change was <code>IndifferentHash</code>. To understand why it existed, you need to know that JSON Logic rules reference data by key — <code>{&quot;var&quot;: &quot;user.name&quot;}</code>. JSON keys are always strings. But in Ruby, it&rsquo;s common to build data hashes with symbol keys (<code>{user: {name: &quot;Alice&quot;}}</code>), and your callers might pass either. Without some accommodation, <code>{&quot;var&quot;: &quot;user.name&quot;}</code> would silently fail on a symbol-keyed hash because <code>&quot;user&quot; != :user</code>.</p>
+<p>The original solution was a wrapper class:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">IndifferentHash</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">SimpleDelegator</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">[]</span>(key)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">super</span>(key<span style="color:#f92672">.</span>to_s) <span style="color:#f92672">||</span> <span style="color:#66d9ef">super</span>(key<span style="color:#f92672">.</span>to_sym)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p><code>SimpleDelegator</code> proxies all method calls to the wrapped object, which means it carries its own object overhead on top of a hash lookup. And crucially, every hash that came in as <code>data</code> — including nested hashes — was getting wrapped. The overhead was on <em>every access</em>, not just on creation.</p>
+<p>The fix: do one <code>deep_stringify_keys</code> preprocessing call when <code>apply</code> is first called, we would walk the data once, normalize all keys to strings and never worry about it access issues again while deleting <code>IndifferentHash</code> entirely. With all these fixes we went  <strong>+81%</strong>. From ~20k to ~36k ops/s on the fair comparison benchmark.</p>
+<p>Still behind <code>json_logic</code> but now in the same ballpark. The next sprint would tackle the remaining allocations — and a correctness fix that became a performance fix at the same time.</p>
+
+  </div>
+  <footer class="post-footer">
+    <a href="/" class="back-link">← todos los posts</a>
+  </footer>
+</article>
+
+    </main>
+    <footer class="site-footer">
+  <p>← <a href="/">luis.land</a></p>
+</footer>
+
+  </body>
+</html>

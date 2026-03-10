@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>You can&#39;t benchmark what you can&#39;t compare - The problem with benchmarking JSON Logic gems in Ruby — dev blog — luis.land</title>
+
+
+
+<meta name="description" content="Part 0 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+Before I talk about performance at all, I need to talk about a problem that …">
+<link rel="canonical" href="http://localhost:3000/blog/posts/json-logic-benchmarks-0/">
+
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="You can&#39;t benchmark what you can&#39;t compare - The problem with benchmarking JSON Logic gems in Ruby">
+<meta property="og:description" content="Part 0 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+Before I talk about performance at all, I need to talk about a problem that …">
+<meta property="og:url" content="http://localhost:3000/blog/posts/json-logic-benchmarks-0/">
+<meta property="og:site_name" content="luis.land">
+
+<meta property="article:published_time" content="2026-03-10T00:00:00Z">
+<meta property="article:author" content="Luis Moyano">
+
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="You can&#39;t benchmark what you can&#39;t compare - The problem with benchmarking JSON Logic gems in Ruby">
+<meta name="twitter:description" content="Part 0 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+Before I talk about performance at all, I need to talk about a problem that …">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/blog/css/blog.css">
+<script defer src="https://analytics.luis.land/script.js" data-website-id="e8e17ea8-77be-4d17-b374-7f9885557cc7" data-domains="luis.land"></script>
+
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="site-nav">
+    <a href="/" class="nav-back">← luis.land</a>
+    <a href="/" class="nav-title">dev vlog</a>
+  </nav>
+</header>
+
+    <main class="container">
+      
+<article class="post">
+  <header class="post-header">
+    <time class="post-date" datetime="2026-03-10">10 Mar 2026</time>
+    <h1 class="post-title">You can&#39;t benchmark what you can&#39;t compare - The problem with benchmarking JSON Logic gems in Ruby</h1>
+  </header>
+  <div class="post-content">
+    <p><em>Part 0 of a series on making the fastest AND most compliant Ruby JSON Logic gem.</em></p>
+<hr>
+<p>Before I talk about performance at all, I need to talk about a problem that makes benchmarking JSON Logic gems in Ruby genuinely tricky — and that most people ignore entirely; <strong>the gems don&rsquo;t do the same thing.</strong></p>
+<h3 id="a-bit-of-context">A bit of context</h3>
+<p>JSON Logic is a spec loosely based on S-expressions where business logic and data are expressed in JSON and the output should be predictable across languages. The idea is that you write a rule once and it works identically in your JavaScript frontend, your Python backend, and your Ruby service.</p>
+<p>The Ruby ecosystem has several gems:</p>
+<ul>
+<li><code>json_logic</code> — the oldest one, utterly abandoned and last updated 4 years ago</li>
+<li><code>json-logic-rb</code> — better maintained, more active, usually filled with very naive errors.</li>
+<li><code>json_logic_ruby</code> — lastly updated on 2024.</li>
+<li><code>shiny_json_logic</code> — mine</li>
+</ul>
+<p>Now here&rsquo;s the thing. The <a href="https://github.com/json-logic/.github/tree/main/tests">official JSON Logic test suite</a> has 601 tests. Let me show you what happens when you run them against each gem:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Gem</th>
+          <th>Tests passing</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>shiny_json_logic</td>
+          <td>601 / 601 (100%)</td>
+      </tr>
+      <tr>
+          <td>json-logic-rb</td>
+          <td>~403 / 601 (67%)</td>
+      </tr>
+      <tr>
+          <td>json_logic</td>
+          <td>~375 / 601 (63%)</td>
+      </tr>
+      <tr>
+          <td>json_logic_ruby</td>
+          <td>~254 / 601 (42%)</td>
+      </tr>
+  </tbody>
+</table>
+<p>So when you benchmark these gems against each other, what exactly are you measuring?</p>
+<p>If I run all 601 tests and <code>json_logic</code> processes 375 of them &ldquo;fast&rdquo; while skipping or erroring on the other 226. Is that faster? It shouldn&rsquo;t be, It&rsquo;s doing less work than a gem that actually passes everything. How can we even compare apples to apples?</p>
+<h3 id="the-two-modes">The two modes</h3>
+<p>This is what led me to design the benchmark in two modes:</p>
+<p><strong>All tests.</strong> Running all 601 official tests through every gem and the ones that error get counted as zero time.</p>
+<p><strong>Fair comparison.</strong> By finding the intersection of tests that <em>all</em> gems pass, and benchmark only on those to resemble an even scenario where they&rsquo;re all doing the same work.</p>
+<p>The difference between these two modes is revealing because a gem that&rsquo;s &ldquo;faster&rdquo; in Mode 1 might just be faster at failing, using a fair ground levels the ground to correctly understand how a gem benchs against other.</p>
+<p>But then, why should we even benchmark with all tests? The reason is that given the case where we allow the competition between two gems  where one provides way more features than the other, we should still be able to measure the performance of those features that would be unnoticed otherwise.</p>
+<h2 id="why-does-this-matter">Why does this matter?</h2>
+<p>If you&rsquo;re evaluating JSON Logic gems and you only look at ops/s, you might pick the wrong one because a gem at 63% compliance running at 80k ops/s is not faster than a gem at 100% compliance running at 70k ops/s, it just breaks faster.</p>
+<p>The benchmark infrastructure I built is open source at <a href="https://github.com/luismoyano/jsonlogic_benchmarks">github.com/luismoyano/jsonlogic_benchmarks</a>. It runs both modes automatically across 9 Ruby versions on Linux CI.</p>
+<p>In the next post I&rsquo;ll talk about where <code>shiny_json_logic</code> actually started on performance — spoiler: Not good.</p>
+
+  </div>
+  <footer class="post-footer">
+    <a href="/" class="back-link">← todos los posts</a>
+  </footer>
+</article>
+
+    </main>
+    <footer class="site-footer">
+  <p>← <a href="/">luis.land</a></p>
+</footer>
+
+  </body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Json Logic in Ruby — The fastest JSON Logic gem — dev blog — luis.land</title>
+
+
+
+<meta name="description" content="Part 5 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+All the optimization work ran on my MacBook. That&rsquo;s fine for direction as …">
+<link rel="canonical" href="http://localhost:3000/blog/posts/json-logic-ruby-18-18-benchmark-results/">
+
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Json Logic in Ruby — The fastest JSON Logic gem">
+<meta property="og:description" content="Part 5 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+All the optimization work ran on my MacBook. That&rsquo;s fine for direction as …">
+<meta property="og:url" content="http://localhost:3000/blog/posts/json-logic-ruby-18-18-benchmark-results/">
+<meta property="og:site_name" content="luis.land">
+
+<meta property="article:published_time" content="2026-03-10T00:00:00Z">
+<meta property="article:author" content="Luis Moyano">
+
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Json Logic in Ruby — The fastest JSON Logic gem">
+<meta name="twitter:description" content="Part 5 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+All the optimization work ran on my MacBook. That&rsquo;s fine for direction as …">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/blog/css/blog.css">
+<script defer src="https://analytics.luis.land/script.js" data-website-id="e8e17ea8-77be-4d17-b374-7f9885557cc7" data-domains="luis.land"></script>
+
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="site-nav">
+    <a href="/" class="nav-back">← luis.land</a>
+    <a href="http://localhost:3000/blog/" class="nav-title">blog</a>
+  </nav>
+</header>
+
+    <main class="container">
+      
+<article class="post">
+  <header class="post-header">
+    <time class="post-date" datetime="2026-03-10">10 Mar 2026</time>
+    <h1 class="post-title">Json Logic in Ruby — The fastest JSON Logic gem</h1>
+  </header>
+  <div class="post-content">
+    <p><em>Part 5 of a series on making the fastest AND most compliant Ruby JSON Logic gem.</em></p>
+<hr>
+<p>All the optimization work ran on my MacBook. That&rsquo;s fine for direction as something being faster locally is probably faster everywhere. But macOS ARM64 has its own quirks, and GitHub Actions macOS runners have known YJIT issues that produce wildly inconsistent numbers.</p>
+<p>9 Ruby versions × 2 modes = 18 benchmark runs. Competitor: <code>json_logic</code>, the fastest alternative at 63% pass rate.</p>
+<h2 id="mode-1--all-tests-601-tests" class="heading-anchor-wrapper">
+  <a href="#mode-1--all-tests-601-tests" class="heading-anchor">#</a>Mode 1 — All tests (601 tests)</h2>
+<table>
+  <thead>
+      <tr>
+          <th>Ruby</th>
+          <th>YJIT</th>
+          <th style="text-align: right">shiny</th>
+          <th style="text-align: right">json_logic</th>
+          <th>Δ</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>2.7</td>
+          <td>—</td>
+          <td style="text-align: right">67,334</td>
+          <td style="text-align: right">55,473</td>
+          <td><strong>+21%</strong></td>
+      </tr>
+      <tr>
+          <td>3.1</td>
+          <td>—</td>
+          <td style="text-align: right">57,568</td>
+          <td style="text-align: right">47,342</td>
+          <td><strong>+22%</strong></td>
+      </tr>
+      <tr>
+          <td>3.2</td>
+          <td>—</td>
+          <td style="text-align: right">84,276</td>
+          <td style="text-align: right">66,466</td>
+          <td><strong>+27%</strong></td>
+      </tr>
+      <tr>
+          <td>3.2</td>
+          <td>✓</td>
+          <td style="text-align: right">86,525</td>
+          <td style="text-align: right">66,037</td>
+          <td><strong>+31%</strong></td>
+      </tr>
+      <tr>
+          <td>3.3</td>
+          <td>—</td>
+          <td style="text-align: right">54,516</td>
+          <td style="text-align: right">47,704</td>
+          <td><strong>+14%</strong></td>
+      </tr>
+      <tr>
+          <td>3.3</td>
+          <td>✓</td>
+          <td style="text-align: right">102,368</td>
+          <td style="text-align: right">85,957</td>
+          <td><strong>+19%</strong></td>
+      </tr>
+      <tr>
+          <td>3.4</td>
+          <td>—</td>
+          <td style="text-align: right">66,928</td>
+          <td style="text-align: right">61,213</td>
+          <td><strong>+9%</strong></td>
+      </tr>
+      <tr>
+          <td>3.4</td>
+          <td>✓</td>
+          <td style="text-align: right">87,160</td>
+          <td style="text-align: right">71,925</td>
+          <td><strong>+21%</strong></td>
+      </tr>
+      <tr>
+          <td>4.0</td>
+          <td>✓</td>
+          <td style="text-align: right">104,566</td>
+          <td style="text-align: right">79,489</td>
+          <td><strong>+32%</strong></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="mode-2--fair-comparison-257-test-intersection" class="heading-anchor-wrapper">
+  <a href="#mode-2--fair-comparison-257-test-intersection" class="heading-anchor">#</a>Mode 2 — Fair comparison (257-test intersection)</h2>
+<table>
+  <thead>
+      <tr>
+          <th>Ruby</th>
+          <th>YJIT</th>
+          <th style="text-align: right">shiny</th>
+          <th style="text-align: right">json_logic</th>
+          <th>Δ</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>2.7</td>
+          <td>—</td>
+          <td style="text-align: right">67,171</td>
+          <td style="text-align: right">46,899</td>
+          <td><strong>+43%</strong></td>
+      </tr>
+      <tr>
+          <td>3.1</td>
+          <td>—</td>
+          <td style="text-align: right">64,150</td>
+          <td style="text-align: right">48,282</td>
+          <td><strong>+33%</strong></td>
+      </tr>
+      <tr>
+          <td>3.2</td>
+          <td>—</td>
+          <td style="text-align: right">98,843</td>
+          <td style="text-align: right">58,148</td>
+          <td><strong>+70%</strong></td>
+      </tr>
+      <tr>
+          <td>3.2</td>
+          <td>✓</td>
+          <td style="text-align: right">111,594</td>
+          <td style="text-align: right">51,493</td>
+          <td><strong>+117%</strong></td>
+      </tr>
+      <tr>
+          <td>3.3</td>
+          <td>—</td>
+          <td style="text-align: right">103,107</td>
+          <td style="text-align: right">75,623</td>
+          <td><strong>+36%</strong></td>
+      </tr>
+      <tr>
+          <td>3.3</td>
+          <td>✓</td>
+          <td style="text-align: right">132,513</td>
+          <td style="text-align: right">65,044</td>
+          <td><strong>+104%</strong></td>
+      </tr>
+      <tr>
+          <td>3.4</td>
+          <td>—</td>
+          <td style="text-align: right">102,314</td>
+          <td style="text-align: right">67,840</td>
+          <td><strong>+51%</strong></td>
+      </tr>
+      <tr>
+          <td>3.4</td>
+          <td>✓</td>
+          <td style="text-align: right">114,890</td>
+          <td style="text-align: right">72,766</td>
+          <td><strong>+58%</strong></td>
+      </tr>
+      <tr>
+          <td>4.0</td>
+          <td>✓</td>
+          <td style="text-align: right">118,674</td>
+          <td style="text-align: right">81,632</td>
+          <td><strong>+45%</strong></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>18/18 wins.</strong></p>
+<h2 id="the-yjit-story" class="heading-anchor-wrapper">
+  <a href="#the-yjit-story" class="heading-anchor">#</a>The YJIT story</h2>
+<p>The Mode 2 YJIT numbers are the most striking. Ruby 3.2 + YJIT: <strong>+117%</strong>. Ruby 3.3 + YJIT: <strong>+104%</strong>.</p>
+<p>Why does YJIT amplify the lead so much?</p>
+<p>After Sprint 2, most operations are static <code>self.call</code> methods on modules. YJIT can see the call target at compile time, inlines it and optimizes the whole dispatch chain. <code>json_logic</code>&rsquo;s lambda dispatch (<code>OPERATIONS[key].call(args, data)</code>) has more indirection as lambda is still an object and the call goes through the Proc invocation mechanism, meaning YJIT has less to work with for inlining.</p>
+<h2 id="why-mode-2-margins-are-bigger-than-mode-1" class="heading-anchor-wrapper">
+  <a href="#why-mode-2-margins-are-bigger-than-mode-1" class="heading-anchor">#</a>Why Mode 2 margins are bigger than Mode 1</h2>
+<p>This is the methodological point from <a href="/blog/posts/post-0-benchmarks">Post 0</a> coming back around. In Mode 1, <code>json_logic</code> gets to speed through a lot of tests by failing them cheaply. In Mode 2, they have to actually compute correct results for the same subset we both pass. That&rsquo;s where the architectural difference shows up.</p>
+<h2 id="where-we-started" class="heading-anchor-wrapper">
+  <a href="#where-we-started" class="heading-anchor">#</a>Where we started</h2>
+<p>Ruby 3.2, no YJIT, fair comparison, pre-optimization:</p>
+<ul>
+<li><code>json_logic</code>: ~55k ops/s</li>
+<li><code>shiny_json_logic</code>: ~20k ops/s</li>
+</ul>
+<p>They were running <strong>2.75× faster</strong> on the subset we both passed.</p>
+<p>End state:</p>
+<ul>
+<li><code>json_logic</code>: 58,148 ops/s</li>
+<li><code>shiny_json_logic</code>: 98,843 ops/s</li>
+</ul>
+<p>We&rsquo;re <strong>70% faster</strong> on that same subset. With YJIT: <strong>+117%</strong>.</p>
+<p>That&rsquo;s the full arc.</p>
+<h2 id="whats-still-on-the-table" class="heading-anchor-wrapper">
+  <a href="#whats-still-on-the-table" class="heading-anchor">#</a>What&rsquo;s still on the table</h2>
+<p>The profiler still shows GC at 55% of CPU time. Two options remain on the Ruby side:</p>
+<p><strong>Option E: Direct lambdas for Tier 1 operations.</strong> About 40% of operations are simple enough to bypass the full <code>Base.call → resolve_rules → execute</code> chain, converting them to direct lambdas is estimated at +15-25% globally; I measured it on <code>min</code>/<code>max</code> (15% of the test suite): a direct lambda equivalent runs at 0.782µs vs 1.316µs for the current chain — <strong>+40%</strong> on those operations alone.</p>
+<p><strong>Option D: C extension.</strong> Implement the engine dispatch and hot operations natively. This could be probably faster but also way more complex to maintain, only makes sense after all Ruby-level wins are gone and only if really needed; <code>shiny_json_logic</code> is already fast enough for production use and the Ruby-level optimizations are still giving us significant wins, so this is a &ldquo;maybe someday&rdquo; kind of thing.</p>
+<p>For now: 100% spec compliance AND fastest Ruby JSON Logic gem. That&rsquo;s enough.</p>
+<hr>
+<p><em>Part 5 of 5. Previous: <a href="/posts/hot-path-loops-and-deleting-a-class">The last few percent: hot path loops and deleting a class</a> · Back to the beginning: <a href="/posts/benchmarking-json-logic-ruby-gems">You can&rsquo;t benchmark what you can&rsquo;t compare</a></em></p>
+<p><em><a href="https://jsonlogicruby.com">jsonlogicruby.com</a> · <a href="https://jsonlogicruby.com/benchmarks">Benchmarks</a> · <a href="https://jsonlogicruby.com/playground">Playground</a> · <a href="https://rubygems.org/gems/shiny_json_logic">rubygems.org/gems/shiny_json_logic</a> · <a href="https://github.com/luismoyano/shiny_json_logic">github.com/luismoyano/shiny_json_logic</a></em></p>
+
+  </div>
+  <footer class="post-footer">
+    <a href="/" class="back-link">← todos los posts</a>
+  </footer>
+</article>
+
+    </main>
+    <footer class="site-footer">
+  <p>← <a href="/">luis.land</a></p>
+</footer>
+
+  </body>
+</html>

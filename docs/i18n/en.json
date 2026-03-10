@@ -2,7 +2,7 @@
   "fab.email.title": "Send email",
   "fab.email.label": "Say hi!",
   "fab.github.title": "GitHub",
-  "fab.blog.label": "dev vlog",
+  "fab.blog.label": "dev blog",
 
   "arrow.email": "Letters here",
   "arrow.github": "My work",
@@ -24,7 +24,7 @@
   "story.map.line2": "Then videogames.",
   "story.map.line3": "And today it's code.",
 
-  "story.medium": "The medium changes but The obsession is the same.",
+  "story.medium": "The medium changes but the obsession is the same.",
 
   "story.videogames": "I've worked on more than 30 videogames, you might know some of them.",
 

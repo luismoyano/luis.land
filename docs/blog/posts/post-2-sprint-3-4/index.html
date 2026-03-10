@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Killing the preprocessing passes: DataHash, HashFetch and allocation profiling — dev blog — luis.land</title>
+
+
+
+<meta name="description" content="Part 2 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+After Sprint 2 we had gone from ~20k to ~36k ops/s. Still behind json_logic. …">
+<link rel="canonical" href="http://localhost:3000/blog/posts/post-2-sprint-3-4/">
+
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Killing the preprocessing passes: DataHash, HashFetch and allocation profiling">
+<meta property="og:description" content="Part 2 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+After Sprint 2 we had gone from ~20k to ~36k ops/s. Still behind json_logic. …">
+<meta property="og:url" content="http://localhost:3000/blog/posts/post-2-sprint-3-4/">
+<meta property="og:site_name" content="luis.land">
+
+<meta property="article:published_time" content="2026-03-10T00:00:00Z">
+<meta property="article:author" content="Luis Moyano">
+
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Killing the preprocessing passes: DataHash, HashFetch and allocation profiling">
+<meta name="twitter:description" content="Part 2 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+After Sprint 2 we had gone from ~20k to ~36k ops/s. Still behind json_logic. …">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/blog/css/blog.css">
+<script defer src="https://analytics.luis.land/script.js" data-website-id="e8e17ea8-77be-4d17-b374-7f9885557cc7" data-domains="luis.land"></script>
+
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="site-nav">
+    <a href="/" class="nav-back">← luis.land</a>
+    <a href="/" class="nav-title">dev vlog</a>
+  </nav>
+</header>
+
+    <main class="container">
+      
+<article class="post">
+  <header class="post-header">
+    <time class="post-date" datetime="2026-03-10">10 Mar 2026</time>
+    <h1 class="post-title">Killing the preprocessing passes: DataHash, HashFetch and allocation profiling</h1>
+  </header>
+  <div class="post-content">
+    <p><em>Part 2 of a series on making the fastest AND most compliant Ruby JSON Logic gem.</em></p>
+<hr>
+<p>After Sprint 2 we had gone from ~20k to ~36k ops/s. Still behind <code>json_logic</code>. Time to look harder at what was happening on every single <code>apply</code> call.</p>
+<h2 id="two-passes-before-any-actual-work">Two passes before any actual work</h2>
+<p>Every call to <code>apply</code> was running two full traversals of the input:</p>
+<p><strong>Pass 1 — validate operations</strong>: Walk the rule tree and raise <code>InvalidOperation</code> if any operator wasn&rsquo;t recognized.</p>
+<p><strong>Pass 2 — <code>deep_stringify_keys</code></strong>: Walk the data hash recursively and normalize all keys to strings which would replace <code>IndifferentHash</code> from Sprint 2 by normalizing the input once upfront.</p>
+<p>Both passes traversed the input before the engine touched it, in most cases even while useful it was just too expensive to run on every call.</p>
+<h2 id="hashfetch-one-lookup-no-preprocessing">HashFetch: one lookup, no preprocessing</h2>
+<p>The fix was <code>Utils::HashFetch</code> — a single utility that looks up a key in a hash trying the string form first, then the symbol form:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">module</span> Utils::HashFetch
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">fetch</span>(obj, key_s)
+</span></span><span style="display:flex;"><span>    key_s <span style="color:#f92672">=</span> key_s<span style="color:#f92672">.</span>to_s
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> obj<span style="color:#f92672">.</span>key?(key_s)
+</span></span><span style="display:flex;"><span>      obj<span style="color:#f92672">[</span>key_s<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">elsif</span> obj<span style="color:#f92672">.</span>key?(key_sym <span style="color:#f92672">=</span> key_s<span style="color:#f92672">.</span>to_sym)
+</span></span><span style="display:flex;"><span>      obj<span style="color:#f92672">[</span>key_sym<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p><code>key?</code> checks presence without touching the value, so <code>nil</code> and <code>false</code> values are handled correctly. <code>Var#fetch_value</code>, <code>Val#dig_value</code>, and <code>ScopeStack#dig_value</code> all went through this single path.</p>
+<p>With <code>HashFetch</code> in place, <code>deep_stringify_keys</code> was no longer needed as we just looked up both key forms on demand in the most efficient way at the point of access.</p>
+<p>Eliminating Pass 1 required a different trick; Let&rsquo;s imagine a typical set of rules and data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span>rule <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;and&#34;</span>: <span style="color:#f92672">[</span>{<span style="color:#e6db74">&#34;var&#34;</span>: <span style="color:#e6db74">&#34;user.address&#34;</span>}, {<span style="color:#e6db74">&#34;var&#34;</span>: <span style="color:#e6db74">&#34;user.personal_info&#34;</span>}<span style="color:#f92672">]</span>}
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;user&#34;</span>: {<span style="color:#e6db74">&#34;address&#34;</span>:{ <span style="color:#e6db74">&#34;street&#34;</span>: <span style="color:#e6db74">&#34;...&#34;</span> }, <span style="color:#e6db74">&#34;personal_info&#34;</span>: {<span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Alice&#34;</span>, <span style="color:#e6db74">&#34;age&#34;</span>: <span style="color:#ae81ff">30</span>}}
+</span></span></code></pre></div><p>And now let&rsquo;s imagine we solve <code>var</code> first in order to solve <code>and</code> later; The resulting hash for <code>and</code> would look like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span>{<span style="color:#e6db74">&#34;and&#34;</span>: <span style="color:#f92672">[</span>{<span style="color:#e6db74">&#34;street&#34;</span>: <span style="color:#e6db74">&#34;...&#34;</span>}, {<span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Alice&#34;</span>, <span style="color:#e6db74">&#34;age&#34;</span>: <span style="color:#ae81ff">30</span>}<span style="color:#f92672">]</span>}
+</span></span></code></pre></div><p>How can we tell the engine &ldquo;this is user data, not a rule&rdquo;? If we just return a plain <code>Hash</code>, the engine would try to interpret it as a rule and look for an operator key, which would blow up the call stack with <code>InvalidOperation</code> errors.</p>
+<p>The solution was <code>DataHash</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Utils</span><span style="color:#f92672">::</span><span style="color:#66d9ef">DataHash</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">Hash</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">wrap</span>(obj)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> obj <span style="color:#66d9ef">unless</span> obj<span style="color:#f92672">.</span>is_a?(<span style="color:#66d9ef">Hash</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> obj <span style="color:#66d9ef">if</span> obj<span style="color:#f92672">.</span>is_a?(<span style="color:#66d9ef">DataHash</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">new</span><span style="color:#f92672">.</span>replace(obj)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>A plain <code>Hash</code> subclass with no new methods just to be used as a type tag. When <code>var</code> or <code>val</code> return a hash from user data, they wrap it in <code>DataHash</code>, the engine checks <code>result.is_a?(DataHash)</code> before attempting operator dispatch and skips evaluation if it is rendering a preprocessing pass unnecessary.</p>
+<p><code>Hash#replace</code> does a C-level table swap on the underlying hash internals — no element-by-element copying, just pointer reassignment. So <code>wrap</code> is effectively free.</p>
+<p><strong>Performance gain from HashFetch + DataHash: +6.9%.</strong> The upfront traversals are gone. Both passes eliminated.</p>
+<h2 id="sprint-4--killing-the-remaining-array-allocations">Sprint 4 — Killing the remaining Array allocations</h2>
+<p>With <code>HashFetch</code> and <code>DataHash</code>  done, I ran the allocation profiler to find what was left:</p>
+<p>Per <code>apply</code> call, across the test suite:</p>
+<ul>
+<li><strong>6.42 Arrays</strong> — way too many</li>
+<li>0.75 Hashes — acceptable</li>
+<li>1.24 Objects — fine</li>
+<li>0.80 Strings — fine</li>
+</ul>
+<p>Arrays were the target. Four sources:</p>
+<p><strong><code>ScopeStack</code> parallel arrays.</strong> JSON Logic has operations like <code>map</code>, <code>filter</code>, and <code>reduce</code> that iterate over an array and evaluate a sub-rule for each element. Inside that sub-rule, <code>{&quot;var&quot;: &quot;&quot;}</code> needs to refer to the <em>current element</em> and not the original top-level data; the scope stack is how the engine tracks this nesting by pushing a new frame onto the stack with the current element as the data context on each iteration and deleting it when the iteration is finished.</p>
+<p>The scope stack was storing frames as <code>[data, index]</code> pairs — each frame was a 2-element Array. Every push allocated one.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># Before: </span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>@stack <span style="color:#f92672">=</span> <span style="color:#f92672">[[</span>data1, <span style="color:#ae81ff">0</span><span style="color:#f92672">]</span>, <span style="color:#f92672">[</span>data2, <span style="color:#ae81ff">1</span><span style="color:#f92672">]]</span> <span style="color:#75715e">#, ...]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># push: </span>
+</span></span><span style="display:flex;"><span>@stack <span style="color:#f92672">&lt;&lt;</span> <span style="color:#f92672">[</span>data, index<span style="color:#f92672">]</span> <span style="color:#75715e"># 1 Array allocation per push</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># After: two parallel arrays</span>
+</span></span><span style="display:flex;"><span>@data_stack <span style="color:#f92672">=</span> <span style="color:#f92672">[</span>data1, data2<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>@index_stack <span style="color:#f92672">=</span> <span style="color:#f92672">[</span><span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># push: </span>
+</span></span><span style="display:flex;"><span>@data_stack <span style="color:#f92672">&lt;&lt;</span> data; @index_stack <span style="color:#f92672">&lt;&lt;</span> index  <span style="color:#75715e"># 0 Array allocations</span>
+</span></span></code></pre></div><p><strong><code>Array.wrap</code> fast path.</strong> We had a utility that ensured values were wrapped in an Array which always allocates a new Array, even if the argument is already one.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># Before</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">wrap</span>(val)
+</span></span><span style="display:flex;"><span>  Array(val)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># After</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">wrap</span>(val)
+</span></span><span style="display:flex;"><span>  val<span style="color:#f92672">.</span>is_a?(Array) ? val : Array(val)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>Saves an allocation for the common case where rules already produce arrays.</p>
+<p><strong><code>safe_arithmetic</code> — kill the Proc.</strong> We had a method that wrapped numeric operations with error handling:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">safe_arithmetic</span>(<span style="color:#f92672">&amp;</span>block)
+</span></span><span style="display:flex;"><span>  result <span style="color:#f92672">=</span> block<span style="color:#f92672">.</span>call
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># ...</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p><code>&amp;block</code> materializes the block as a <code>Proc</code> object while <code>yield</code> doesn&rsquo;t:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">safe_arithmetic</span>
+</span></span><span style="display:flex;"><span>  result <span style="color:#f92672">=</span> <span style="color:#66d9ef">yield</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># ...</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>One Proc fewer per arithmetic operation.</p>
+<h2 id="results-after-sprint-4">Results after Sprint 4</h2>
+<p>Arrays per apply: <strong>6.42 → 4.38 (-32%)</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th>Ruby</th>
+          <th>Before</th>
+          <th>After</th>
+          <th>Δ</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>2.7 no YJIT</td>
+          <td>754k</td>
+          <td>857k</td>
+          <td>+14%</td>
+      </tr>
+      <tr>
+          <td>3.2 no YJIT</td>
+          <td>717k</td>
+          <td>804k</td>
+          <td>+12%</td>
+      </tr>
+      <tr>
+          <td>3.2 YJIT</td>
+          <td>1,068k</td>
+          <td>1,251k</td>
+          <td>+17%</td>
+      </tr>
+      <tr>
+          <td>3.4 no YJIT</td>
+          <td>665k</td>
+          <td>744k</td>
+          <td>+12%</td>
+      </tr>
+      <tr>
+          <td>3.4 YJIT</td>
+          <td>1,107k</td>
+          <td>1,226k</td>
+          <td>+11%</td>
+      </tr>
+  </tbody>
+</table>
+<p><em>(Local macOS numbers. Linux CI results in Part 4.)</em></p>
+<p>Consistent +12-17% across all Ruby versions, I learnt that allocation reduction translates cleanly to wall time as every Array we stop creating is one GC doesn&rsquo;t have to collect.</p>
+<p>Next: the last allocations hiding in hot path loops.</p>
+
+  </div>
+  <footer class="post-footer">
+    <a href="/" class="back-link">← todos los posts</a>
+  </footer>
+</article>
+
+    </main>
+    <footer class="site-footer">
+  <p>← <a href="/">luis.land</a></p>
+</footer>
+
+  </body>
+</html>

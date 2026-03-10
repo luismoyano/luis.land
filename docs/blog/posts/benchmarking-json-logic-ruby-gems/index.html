@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Json Logic in Ruby — You can&#39;t benchmark what you can&#39;t compare: The problem with benchmarking JSON Logic gems in Ruby — dev blog — luis.land</title>
+
+
+
+<meta name="description" content="Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+Before I talk about performance at all, I need to talk about a problem that …">
+<link rel="canonical" href="http://localhost:3000/blog/posts/benchmarking-json-logic-ruby-gems/">
+
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Json Logic in Ruby — You can&#39;t benchmark what you can&#39;t compare: The problem with benchmarking JSON Logic gems in Ruby">
+<meta property="og:description" content="Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+Before I talk about performance at all, I need to talk about a problem that …">
+<meta property="og:url" content="http://localhost:3000/blog/posts/benchmarking-json-logic-ruby-gems/">
+<meta property="og:site_name" content="luis.land">
+
+<meta property="article:published_time" content="2026-03-06T00:00:00Z">
+<meta property="article:author" content="Luis Moyano">
+
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Json Logic in Ruby — You can&#39;t benchmark what you can&#39;t compare: The problem with benchmarking JSON Logic gems in Ruby">
+<meta name="twitter:description" content="Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.
+Before I talk about performance at all, I need to talk about a problem that …">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="/blog/css/blog.css">
+<script defer src="https://analytics.luis.land/script.js" data-website-id="e8e17ea8-77be-4d17-b374-7f9885557cc7" data-domains="luis.land"></script>
+
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="site-nav">
+    <a href="/" class="nav-back">← luis.land</a>
+    <a href="http://localhost:3000/blog/" class="nav-title">blog</a>
+  </nav>
+</header>
+
+    <main class="container">
+      
+<article class="post">
+  <header class="post-header">
+    <time class="post-date" datetime="2026-03-06">06 Mar 2026</time>
+    <h1 class="post-title">Json Logic in Ruby — You can&#39;t benchmark what you can&#39;t compare: The problem with benchmarking JSON Logic gems in Ruby</h1>
+  </header>
+  <div class="post-content">
+    <p><em>Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.</em></p>
+<hr>
+<p>Before I talk about performance at all, I need to talk about a problem that makes benchmarking JSON Logic gems in Ruby genuinely tricky — and that most people ignore entirely: <strong>the gems don&rsquo;t do the same thing.</strong></p>
+<h3 id="a-bit-of-context" class="heading-anchor-wrapper">
+  <a href="#a-bit-of-context" class="heading-anchor">#</a>A bit of context</h3>
+<p>JSON Logic is a spec loosely based on S-expressions where business logic and data are expressed in JSON and the output should be predictable across languages. The idea is that you write a rule once and it works identically in your JavaScript frontend, your Python backend, and your Ruby service.</p>
+<p>The Ruby ecosystem has several gems:</p>
+<ul>
+<li><code>json_logic</code> — the oldest one, abandoned and last updated 4 years ago</li>
+<li><code>json-logic-rb</code> — better maintained, more active</li>
+<li><code>json_logic_ruby</code> — last updated in 2024</li>
+<li><code>shiny_json_logic</code> — mine</li>
+</ul>
+<p>Now here&rsquo;s the thing. The <a href="https://github.com/json-logic/.github/tree/main/tests">official JSON Logic test suite</a> has 601 tests. Let me show you what happens when you run them against each gem:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Gem</th>
+          <th>Tests passing</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>shiny_json_logic</td>
+          <td>601 / 601 (100%)</td>
+      </tr>
+      <tr>
+          <td>json-logic-rb</td>
+          <td>563 / 601 (93.7%)</td>
+      </tr>
+      <tr>
+          <td>json_logic</td>
+          <td>383 / 601 (63.7%)</td>
+      </tr>
+      <tr>
+          <td>json_logic_ruby</td>
+          <td>262 / 601 (43.6%)</td>
+      </tr>
+  </tbody>
+</table>
+<p>So when you benchmark these gems against each other, what exactly are you measuring?</p>
+<p>If <code>json_logic</code> processes 383 tests &ldquo;fast&rdquo; while erroring on the other 218 — is that faster? It shouldn&rsquo;t count. It&rsquo;s doing less work than a gem that actually handles everything. How can we compare apples to apples?</p>
+<h3 id="the-two-modes" class="heading-anchor-wrapper">
+  <a href="#the-two-modes" class="heading-anchor">#</a>The two modes</h3>
+<p>This is what led me to design the benchmark in two modes:</p>
+<p><strong>Mode 1 — All tests.</strong> Run all 601 official tests through every gem. Tests that error out count as zero throughput — the gem simply didn&rsquo;t handle them.</p>
+<p><strong>Mode 2 — Fair comparison.</strong> Find the intersection of tests that <em>all</em> gems pass, and benchmark only on those. An even playing field where every gem is doing the same work.</p>
+<p>The difference is revealing. A gem that looks &ldquo;faster&rdquo; in Mode 1 might just be faster at failing. Mode 2 tells you what happens when they&rsquo;re all actually solving the same problems.</p>
+<p>Mode 1 still matters though: it captures performance on features that only compliant gems support. If a gem doesn&rsquo;t implement <code>reduce</code> at all, it will never show up slow on <code>reduce</code> tests — but that&rsquo;s not a win.</p>
+<p>You can see both modes side by side on <a href="https://jsonlogicruby.com/benchmarks">jsonlogicruby.com/benchmarks</a>.</p>
+<h3 id="a-note-on-the-numbers" class="heading-anchor-wrapper">
+  <a href="#a-note-on-the-numbers" class="heading-anchor">#</a>A note on the numbers</h3>
+<p>The benchmark runs on GitHub Actions Linux runners, across 9 Ruby versions with and without YJIT. The absolute ops/s numbers will vary between runs — GH Actions shared runners have variable load, and a run on a busy day can show 20-30% lower absolute numbers than one on a quiet day.</p>
+<p>What stays stable is the <em>differential</em> between gems. The underlying hardware and OS are the same for all gems in a given run, so the relative advantage — &ldquo;shiny is X% faster than json_logic on this Ruby version&rdquo; — stays consistent across runs even when the absolute numbers shift. Those differentials are the actual signal.</p>
+<p>When I quote numbers in this series, they come from a specific CI run on Linux. Treat the absolute values as representative, not as guarantees.</p>
+<h2 id="why-does-this-matter" class="heading-anchor-wrapper">
+  <a href="#why-does-this-matter" class="heading-anchor">#</a>Why does this matter?</h2>
+<p>If you&rsquo;re evaluating JSON Logic gems and you only look at ops/s, you might pick the wrong one. A gem at 63% compliance running at 80k ops/s is not faster than a gem at 100% compliance running at 70k ops/s — it just breaks faster.</p>
+<p>You can try <code>shiny_json_logic</code> directly in the <a href="https://jsonlogicruby.com/playground">playground</a> without installing anything.</p>
+<p>The benchmark infrastructure is open source at <a href="https://github.com/luismoyano/jsonlogic_benchmarks">github.com/luismoyano/jsonlogic_benchmarks</a>. It runs both modes automatically across 9 Ruby versions on Linux CI.</p>
+<p>In the next post I&rsquo;ll talk about where <code>shiny_json_logic</code> actually started on performance — spoiler: not good.</p>
+<hr>
+<p><em>Part 1 of 5. Next: <a href="/posts/optimizing-json-logic-ruby-from-correct-to-competitive">From correct to competitive: quick wins and the big jump</a></em></p>
+<p><em><a href="https://jsonlogicruby.com">jsonlogicruby.com</a> · <a href="https://jsonlogicruby.com/benchmarks">Benchmarks</a> · <a href="https://jsonlogicruby.com/playground">Playground</a> · <a href="https://rubygems.org/gems/shiny_json_logic">rubygems.org/gems/shiny_json_logic</a> · <a href="https://github.com/luismoyano/shiny_json_logic">github.com/luismoyano/shiny_json_logic</a></em></p>
+
+  </div>
+  <footer class="post-footer">
+    <a href="/" class="back-link">← todos los posts</a>
+  </footer>
+</article>
+
+    </main>
+    <footer class="site-footer">
+  <p>← <a href="/">luis.land</a></p>
+</footer>
+
+  </body>
+</html>
