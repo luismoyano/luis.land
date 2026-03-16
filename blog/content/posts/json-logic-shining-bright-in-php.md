@@ -4,11 +4,9 @@ date: 2026-03-16
 draft: false
 ---
 
-Introducing `shiny/json-logic-php`: A modern, fully compliant and blazing fast JSON Logic implementation for PHP. With 100% compliance to the official spec and a performance boost of ~2x over the original.
+* Introducing `shiny/json-logic-php`: A modern, fully compliant and blazing fast JSON Logic implementation for PHP. With 100% compliance to the official spec and a performance boost of ~2x over the original.
 
 ---
-
-# JSON Logic for PHP: a great idea with a neglected standard and my attempt to fix both
 
 JSON Logic is one of those ideas that's so obviously right that you wonder why it took so long: You express business rules as plain serializable and portable JSON, safely evaluable without `eval()`. Store it in a database, send it over an API and evaluate it server-side or client-side against the same spec. Things like feature flags, access control, pricing logic or eligibility rules becomes just data.
 
