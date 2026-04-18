@@ -27,4 +27,13 @@ WithErrorHandling: 2.3% + 2.1%
 &lt;p>Before I talk about performance at all, I need to talk about a problem that makes benchmarking JSON Logic gems in Ruby genuinely tricky — and that most people ignore entirely: &lt;strong>the gems don&amp;rsquo;t do the same thing.&lt;/strong>&lt;/p>
 &lt;h3 id="a-bit-of-context" class="heading-anchor-wrapper">
  &lt;a href="#a-bit-of-context" class="heading-anchor">#&lt;/a>A bit of context&lt;/h3>
-&lt;p>JSON Logic is a spec loosely based on S-expressions where business logic and data are expressed in JSON and the output should be predictable across languages. The idea is that you write a rule once and it works identically in your JavaScript frontend, your Python backend, and your Ruby service.&lt;/p></description></item></channel></rss>
+&lt;p>JSON Logic is a spec loosely based on S-expressions where business logic and data are expressed in JSON and the output should be predictable across languages. The idea is that you write a rule once and it works identically in your JavaScript frontend, your Python backend, and your Ruby service.&lt;/p></description></item><item><title>Porting shiny_json_logic to Crystal: What the type system taught me about JSON Logic</title><link>https://luis.land/blog/posts/introducing-shiny-json-logic-in-crystal/</link><pubDate>Fri, 06 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/introducing-shiny-json-logic-in-crystal/</guid><description>&lt;p>&lt;em>Introducing JsonLogic to Crystal&lt;/em>&lt;/p>
+&lt;ul>
+&lt;li>&lt;/li>
+&lt;/ul>
+&lt;p>I&amp;rsquo;ve been maintaining &lt;a href="https://rubygems.org/gems/shiny_json_logic">shiny_json_logic&lt;/a> (a Ruby JSON Logic implementation with 100% official test compliance) for a while now. When I decided to port it to Crystal, I expected a mechanical translation job but it wasn&amp;rsquo;t!&lt;/p>
+&lt;p>This is the story of what changed, what broke, and what Crystal forced me to do better.&lt;/p>
+&lt;hr>
+&lt;h2 id="why-crystal" class="heading-anchor-wrapper">
+ &lt;a href="#why-crystal" class="heading-anchor">#&lt;/a>Why Crystal&lt;/h2>
+&lt;p>The Ruby gem was already passing 601/601 official tests and winning benchmarks against every other Ruby implementation. But Ruby is an interpreted, dynamically typed language. JSON Logic is a tree-walking interpreter — every &lt;code>apply&lt;/code> call recurses through a rule, pattern-matches on operator names, and dispatches to the right handler.&lt;/p></description></item></channel></rss>
