@@ -1,47 +1,30 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Posts on dev blog — luis.land</title>
-    <link>https://luis.land/blog/posts/</link>
-    <description>Recent content in Posts on dev blog — luis.land</description>
-    <generator>Hugo</generator>
-    <language>es</language>
-    <lastBuildDate>Tue, 10 Mar 2026 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://luis.land/blog/posts/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Json Logic in Ruby — The fastest JSON Logic gem</title>
-      <link>https://luis.land/blog/posts/json-logic-ruby-18-18-benchmark-results/</link>
-      <pubDate>Tue, 10 Mar 2026 00:00:00 +0000</pubDate>
-      <guid>https://luis.land/blog/posts/json-logic-ruby-18-18-benchmark-results/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Part 5 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;All the optimization work ran on my MacBook. That&amp;rsquo;s fine for direction as something being faster locally is probably faster everywhere. But macOS ARM64 has its own quirks, and GitHub Actions macOS runners have known YJIT issues that produce wildly inconsistent numbers.&lt;/p&gt;&#xA;&lt;p&gt;9 Ruby versions × 2 modes = 18 benchmark runs. Competitor: &lt;code&gt;json_logic&lt;/code&gt;, the fastest alternative at 63% pass rate.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Json Logic in Ruby — The last few percent: hot path loops and deleting a class</title>
-      <link>https://luis.land/blog/posts/hot-path-loops-and-deleting-a-class/</link>
-      <pubDate>Mon, 09 Mar 2026 00:00:00 +0000</pubDate>
-      <guid>https://luis.land/blog/posts/hot-path-loops-and-deleting-a-class/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Part 4 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;After Sprint 4 I ran the profiler again:&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;GC:                      55.36%&#xA;Engine.call:              8.1%&#xA;MinMaxCollection.resolve: 6.4%&#xA;Numerify.numerify:        2.8%&#xA;WithErrorHandling:        2.3% + 2.1%&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;GC at 55% of CPU time. More than half the benchmark was Ruby garbage collecting — not evaluating rules, just cleaning up after itself.&lt;/p&gt;&#xA;&lt;p&gt;We&amp;rsquo;d cut allocations by 32%, but 4.38 Arrays per apply is still a lot when you&amp;rsquo;re running 600 tests thousands of times which means there were specific hot paths still creating unnecessary arrays. Let&amp;rsquo;s find out where!&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Json Logic in Ruby — Killing the preprocessing passes: DataHash, HashFetch and allocation profiling</title>
-      <link>https://luis.land/blog/posts/killing-the-preprocessing-passes-datahash-hashfetch/</link>
-      <pubDate>Sun, 08 Mar 2026 00:00:00 +0000</pubDate>
-      <guid>https://luis.land/blog/posts/killing-the-preprocessing-passes-datahash-hashfetch/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Part 3 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;After Sprint 2 we had gone from ~20k to ~36k ops/s. Still behind &lt;code&gt;json_logic&lt;/code&gt;. Time to look harder at what was happening on every single &lt;code&gt;apply&lt;/code&gt; call.&lt;/p&gt;&#xA;&lt;h2 id=&#34;two-passes-before-any-actual-work&#34; class=&#34;heading-anchor-wrapper&#34;&gt;&#xA;  &lt;a href=&#34;#two-passes-before-any-actual-work&#34; class=&#34;heading-anchor&#34;&gt;#&lt;/a&gt;Two passes before any actual work&lt;/h2&gt;&#xA;&lt;p&gt;Every call to &lt;code&gt;apply&lt;/code&gt; was running two full traversals of the input:&lt;/p&gt;&#xA;&lt;p&gt;&lt;strong&gt;Pass 1 — validate operations&lt;/strong&gt;: Walk the rule tree and raise &lt;code&gt;InvalidOperation&lt;/code&gt; if any operator wasn&amp;rsquo;t recognized.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Json Logic in Ruby — Optimizing a JSON Logic Gem - From correct to competitive: quick wins and the big jump</title>
-      <link>https://luis.land/blog/posts/optimizing-json-logic-ruby-from-correct-to-competitive/</link>
-      <pubDate>Sat, 07 Mar 2026 00:00:00 +0000</pubDate>
-      <guid>https://luis.land/blog/posts/optimizing-json-logic-ruby-from-correct-to-competitive/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Part 2 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;When I first got &lt;code&gt;shiny_json_logic&lt;/code&gt; to 100% test compliance, I still wanted to make my gem as competitive as possible for production; I myself use it and some other devs I know in their companies started to pick it up and I truly wanted them to choose my work over the other options around, so I decided to run a benchmark and see how my gem compared against the others&amp;hellip;&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Json Logic in Ruby — You can&#39;t benchmark what you can&#39;t compare: The problem with benchmarking JSON Logic gems in Ruby</title>
-      <link>https://luis.land/blog/posts/benchmarking-json-logic-ruby-gems/</link>
-      <pubDate>Fri, 06 Mar 2026 00:00:00 +0000</pubDate>
-      <guid>https://luis.land/blog/posts/benchmarking-json-logic-ruby-gems/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;Before I talk about performance at all, I need to talk about a problem that makes benchmarking JSON Logic gems in Ruby genuinely tricky — and that most people ignore entirely: &lt;strong&gt;the gems don&amp;rsquo;t do the same thing.&lt;/strong&gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;a-bit-of-context&#34; class=&#34;heading-anchor-wrapper&#34;&gt;&#xA;  &lt;a href=&#34;#a-bit-of-context&#34; class=&#34;heading-anchor&#34;&gt;#&lt;/a&gt;A bit of context&lt;/h3&gt;&#xA;&lt;p&gt;JSON Logic is a spec loosely based on S-expressions where business logic and data are expressed in JSON and the output should be predictable across languages. The idea is that you write a rule once and it works identically in your JavaScript frontend, your Python backend, and your Ruby service.&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on dev blog — luis.land</title><link>https://luis.land/blog/posts/</link><description>Recent content in Posts on dev blog — luis.land</description><generator>Hugo</generator><language>es</language><lastBuildDate>Mon, 16 Mar 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://luis.land/blog/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Json Logic in PHP — We're at it again!</title><link>https://luis.land/blog/posts/json-logic-shining-bright-in-php/</link><pubDate>Mon, 16 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/json-logic-shining-bright-in-php/</guid><description>&lt;ul>
+&lt;li>Introducing &lt;code>shiny/json-logic-php&lt;/code>: A modern, fully compliant and blazing fast JSON Logic implementation for PHP. With 100% compliance to the official spec and a performance boost of ~2x over the original.&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>JSON Logic is one of those ideas that&amp;rsquo;s so obviously right that you wonder why it took so long: You express business rules as plain serializable and portable JSON, safely evaluable without &lt;code>eval()&lt;/code>. Store it in a database, send it over an API and evaluate it server-side or client-side against the same spec. Things like feature flags, access control, pricing logic or eligibility rules becomes just data.&lt;/p></description></item><item><title>Json Logic in Ruby — The fastest JSON Logic gem</title><link>https://luis.land/blog/posts/json-logic-ruby-18-18-benchmark-results/</link><pubDate>Tue, 10 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/json-logic-ruby-18-18-benchmark-results/</guid><description>&lt;p>&lt;em>Part 5 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em>&lt;/p>
+&lt;hr>
+&lt;p>All the optimization work ran on my MacBook. That&amp;rsquo;s fine for direction as something being faster locally is probably faster everywhere. But macOS ARM64 has its own quirks, and GitHub Actions macOS runners have known YJIT issues that produce wildly inconsistent numbers.&lt;/p>
+&lt;p>9 Ruby versions × 2 modes = 18 benchmark runs. Competitor: &lt;code>json_logic&lt;/code>, the fastest alternative at 63% pass rate.&lt;/p></description></item><item><title>Json Logic in Ruby — The last few percent: hot path loops and deleting a class</title><link>https://luis.land/blog/posts/hot-path-loops-and-deleting-a-class/</link><pubDate>Mon, 09 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/hot-path-loops-and-deleting-a-class/</guid><description>&lt;p>&lt;em>Part 4 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em>&lt;/p>
+&lt;hr>
+&lt;p>After Sprint 4 I ran the profiler again:&lt;/p>
+&lt;pre tabindex="0">&lt;code>GC: 55.36%
+Engine.call: 8.1%
+MinMaxCollection.resolve: 6.4%
+Numerify.numerify: 2.8%
+WithErrorHandling: 2.3% + 2.1%
+&lt;/code>&lt;/pre>&lt;p>GC at 55% of CPU time. More than half the benchmark was Ruby garbage collecting — not evaluating rules, just cleaning up after itself.&lt;/p>
+&lt;p>We&amp;rsquo;d cut allocations by 32%, but 4.38 Arrays per apply is still a lot when you&amp;rsquo;re running 600 tests thousands of times which means there were specific hot paths still creating unnecessary arrays. Let&amp;rsquo;s find out where!&lt;/p></description></item><item><title>Json Logic in Ruby — Killing the preprocessing passes: DataHash, HashFetch and allocation profiling</title><link>https://luis.land/blog/posts/killing-the-preprocessing-passes-datahash-hashfetch/</link><pubDate>Sun, 08 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/killing-the-preprocessing-passes-datahash-hashfetch/</guid><description>&lt;p>&lt;em>Part 3 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em>&lt;/p>
+&lt;hr>
+&lt;p>After Sprint 2 we had gone from ~20k to ~36k ops/s. Still behind &lt;code>json_logic&lt;/code>. Time to look harder at what was happening on every single &lt;code>apply&lt;/code> call.&lt;/p>
+&lt;h2 id="two-passes-before-any-actual-work" class="heading-anchor-wrapper">
+ &lt;a href="#two-passes-before-any-actual-work" class="heading-anchor">#&lt;/a>Two passes before any actual work&lt;/h2>
+&lt;p>Every call to &lt;code>apply&lt;/code> was running two full traversals of the input:&lt;/p>
+&lt;p>&lt;strong>Pass 1 — validate operations&lt;/strong>: Walk the rule tree and raise &lt;code>InvalidOperation&lt;/code> if any operator wasn&amp;rsquo;t recognized.&lt;/p></description></item><item><title>Json Logic in Ruby — Optimizing a JSON Logic Gem - From correct to competitive: quick wins and the big jump</title><link>https://luis.land/blog/posts/optimizing-json-logic-ruby-from-correct-to-competitive/</link><pubDate>Sat, 07 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/optimizing-json-logic-ruby-from-correct-to-competitive/</guid><description>&lt;p>&lt;em>Part 2 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em>&lt;/p>
+&lt;hr>
+&lt;p>When I first got &lt;code>shiny_json_logic&lt;/code> to 100% test compliance, I still wanted to make my gem as competitive as possible for production; I myself use it and some other devs I know in their companies started to pick it up and I truly wanted them to choose my work over the other options around, so I decided to run a benchmark and see how my gem compared against the others&amp;hellip;&lt;/p></description></item><item><title>Json Logic in Ruby — You can't benchmark what you can't compare: The problem with benchmarking JSON Logic gems in Ruby</title><link>https://luis.land/blog/posts/benchmarking-json-logic-ruby-gems/</link><pubDate>Fri, 06 Mar 2026 00:00:00 +0000</pubDate><guid>https://luis.land/blog/posts/benchmarking-json-logic-ruby-gems/</guid><description>&lt;p>&lt;em>Part 1 of a series on making the fastest AND most compliant Ruby JSON Logic gem.&lt;/em>&lt;/p>
+&lt;hr>
+&lt;p>Before I talk about performance at all, I need to talk about a problem that makes benchmarking JSON Logic gems in Ruby genuinely tricky — and that most people ignore entirely: &lt;strong>the gems don&amp;rsquo;t do the same thing.&lt;/strong>&lt;/p>
+&lt;h3 id="a-bit-of-context" class="heading-anchor-wrapper">
+ &lt;a href="#a-bit-of-context" class="heading-anchor">#&lt;/a>A bit of context&lt;/h3>
+&lt;p>JSON Logic is a spec loosely based on S-expressions where business logic and data are expressed in JSON and the output should be predictable across languages. The idea is that you write a rule once and it works identically in your JavaScript frontend, your Python backend, and your Ruby service.&lt;/p></description></item></channel></rss>
