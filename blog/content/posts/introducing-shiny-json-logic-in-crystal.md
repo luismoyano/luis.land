@@ -1,6 +1,6 @@
 ---
 title: "Porting shiny_json_logic to Crystal: What the type system taught me about JSON Logic"
-date: 2026-03-06
+date: 2026-04-18
 draft: false
 ---
 
